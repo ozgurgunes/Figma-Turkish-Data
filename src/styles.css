@@ -1,0 +1,19 @@
+.right {
+  float: right;
+  margin-top: -2px;
+}
+
+.float-right {
+  float: right;
+}
+
+.margin-top {
+  margin-top: -2px;
+}
+
+.float-left {
+    float: left;
+}
+.full {
+  width: 100%;
+}

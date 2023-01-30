@@ -1,0 +1,82 @@
+{
+  "name": "figma-turkish-data",
+  "version": "1.0.0",
+  "description": "Turkish data supplier plugin, provides names, locations, business titles and dates in various formats.",
+  "author": "Ozgur Gunes",
+  "authorEmail": "o.gunes@gmail.com",
+  "homepage": "https://github.com/ozgurgunes/Figma-Turkish-Data",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ozgurgunes/Figma-Turkish-Data.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ozgurgunes/Figma-Turkish-Data/issues"
+  },
+  "dependencies": {
+    "@create-figma-plugin/ui": "^1.8.4",
+    "@create-figma-plugin/utilities": "^1.8.4",
+    "preact": "^10"
+  },
+  "devDependencies": {
+    "@create-figma-plugin/build": "^1.8.4",
+    "@create-figma-plugin/tsconfig": "^1.8.4",
+    "@figma/plugin-typings": "1.42.1",
+    "typescript": "^4.6.2"
+  },
+  "scripts": {
+    "build": "build-figma-plugin --typecheck --minify",
+    "watch": "build-figma-plugin --typecheck --watch"
+  },
+  "figma-plugin": {
+    "editorType": [
+      "figma"
+    ],
+    "id": "turkish-date",
+    "name": "Turkish Data",
+    "menu": [
+      {
+        "name": "Name",
+        "main": "src/supplyName/main.ts",
+        "ui": "src/supplyName/ui.tsx"
+      },
+      {
+        "name": "Location",
+        "main": "src/supplyLocation/main.ts",
+        "ui": "src/supplyLocation/ui.tsx"
+      },
+      {
+        "name": "Datetime",
+        "main": "src/supplyDatetime/main.ts",
+        "ui": "src/supplyDatetime/ui.tsx"
+      },
+      {
+        "name": "Business",
+        "main": "src/supplyBusiness/main.ts",
+        "ui": "src/supplyBusiness/ui.tsx"
+      }
+    ],
+    "relaunchButtons": {
+      "turkishName": {
+        "name": "Turkish Names",
+        "main": "src/supplyName/main.ts",
+        "ui": "src/supplyName/ui.tsx"
+      },
+      "turkishDateTime": {
+        "name": "Turkish Dates",
+        "main": "src/supplyDatetime/main.ts",
+        "ui": "src/supplyDatetime/ui.tsx"
+      },
+      "turkishLocation": {
+        "name": "Turkish Locations",
+        "main": "src/supplyLocation/main.ts",
+        "ui": "src/supplyLocation/ui.tsx"
+      },
+      "turkishBusiness": {
+        "name": "Turkish Businesses",
+        "main": "src/supplyBusiness/main.ts",
+        "ui": "src/supplyBusiness/ui.tsx"
+      }
+    }
+  }
+}
