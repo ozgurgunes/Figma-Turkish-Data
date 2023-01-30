@@ -50,6 +50,12 @@ function Plugin(props: { lastOrder: string }) {
   const handleDistrictsOfIstanbulButtonClick = useCallback(() => {
     emit<NameHandler>('DISTRICTS_OF_ISTANBUL', options)
   }, [options])
+  const handleCityToCityButtonClick = useCallback(() => {
+    emit<NameHandler>('CITY_TO_CITY', options)
+  }, [options])
+  const handleDistrictToDistrictButtonClick = useCallback(() => {
+    emit<NameHandler>('DISTRICT_TO_DISTRICT', options)
+  }, [options])
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
@@ -93,6 +99,14 @@ function Plugin(props: { lastOrder: string }) {
         onClick={handleDistrictsOfIstanbulButtonClick}
       >
         Districts of Istanbul
+      </Button>
+      <VerticalSpace space="extraSmall" />
+      <Button secondary fullWidth onClick={handleCityToCityButtonClick}>
+        City - City
+      </Button>
+      <VerticalSpace space="extraSmall" />
+      <Button secondary fullWidth onClick={handleDistrictToDistrictButtonClick}>
+        District - District
       </Button>
       <VerticalSpace space="extraSmall" />
     </Container>

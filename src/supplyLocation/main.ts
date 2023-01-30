@@ -32,13 +32,15 @@ export interface Options {
 
 export interface NameHandler extends EventHandler {
   name:
-    | 'ADDRESS'
-    | 'CITY'
-    | 'COUNTRY'
-    | 'DISTRICT_SLASH_CITY'
-    | 'DISTRICT_COMMA_CITY'
-    | 'DISTRICTS_OF_ANKARA'
-    | 'DISTRICTS_OF_ISTANBUL'
+  | 'ADDRESS'
+  | 'CITY'
+  | 'COUNTRY'
+  | 'DISTRICT_SLASH_CITY'
+  | 'DISTRICT_COMMA_CITY'
+  | 'DISTRICTS_OF_ANKARA'
+  | 'DISTRICTS_OF_ISTANBUL'
+  | 'CITY_TO_CITY'
+  | 'DISTRICT_TO_DISTRICT'
   handler: (options: Options) => void
 }
 
@@ -66,10 +68,16 @@ export default async function (): Promise<void> {
   on<NameHandler>('DISTRICTS_OF_ISTANBUL', options => {
     supplyLocations(supplyDistrictsOfIstanbul, options)
   })
+  on<NameHandler>('CITY_TO_CITY', options => {
+    supplyLocations(supplyCityToCity, options)
+  })
+  on<NameHandler>('DISTRICT_TO_DISTRICT', options => {
+    supplyLocations(supplyDistrictToDistrict, options)
+  })
   showUI(
     {
       width: 240,
-      height: 368,
+      height: 456,
     },
     { lastOrder: lastOrder }
   )
@@ -90,7 +98,7 @@ async function supplyLocations(supplierFunction: Function, options: Options) {
   const selectedNodes = getSelectedTextNodes()
   const locations = orderFunction(
     supplierFunction(selectedNodes.length, options.order)
-    )
+  )
   selectedNodes.forEach((textNode, i) => {
     figma.loadFontAsync(textNode.fontName as FontName).then(() => {
       textNode.characters = locations[i]
@@ -135,27 +143,26 @@ export function supplyAddress(length: number, order?: string) {
 
 export function supplyCity(length: number, order?: string) {
   let data: string[] = []
-  console.log('Pass')
   let names = cities.map(city => city.name)
-    switch (order) {
-      case 'ascending':
-        names = orderAscendingData(names)
-        for (let i = 0; i < length; i++) {
-          data.push(names[i % names.length])
-        }
-        break
-      case 'descending':
-        names = orderDescendingData(names)
-        for (let i = 0; i < length; i++) {
-          data.push(names[i % names.length])
-        }
-        break
-      default:
-        for (let i = 0; i < length; i++) {
-          data.push(names[Math.floor(Math.random() * names.length)])
-        }
-        break
-    }
+  switch (order) {
+    case 'ascending':
+      names = orderAscendingData(names)
+      for (let i = 0; i < length; i++) {
+        data.push(names[i % names.length])
+      }
+      break
+    case 'descending':
+      names = orderDescendingData(names)
+      for (let i = 0; i < length; i++) {
+        data.push(names[i % names.length])
+      }
+      break
+    default:
+      for (let i = 0; i < length; i++) {
+        data.push(names[Math.floor(Math.random() * names.length)])
+      }
+      break
+  }
   return data
 }
 
@@ -167,16 +174,16 @@ export function supplyDistrictCommaCity(length: number, order?: string) {
     data.push({ city: city.name, town: town })
   }
   return data.map(data => data.town + ', ' + data.city)
-/* 
-  return data.sort((a, b) => {
-      if (a.city == b.city) {
-        return a.town.localeCompare(b.town, 'tr-TR', { sensitivity: 'base' })
-      }
-      return a.city.localeCompare(b.city, 'tr-TR', { sensitivity: 'base' })
-    })
-    .map(data => data.town + ', ' + data.city)
- */
-  }
+  /* 
+    return data.sort((a, b) => {
+        if (a.city == b.city) {
+          return a.town.localeCompare(b.town, 'tr-TR', { sensitivity: 'base' })
+        }
+        return a.city.localeCompare(b.city, 'tr-TR', { sensitivity: 'base' })
+      })
+      .map(data => data.town + ', ' + data.city)
+   */
+}
 
 export function supplyDistrictSlashCity(length: number, order?: string) {
   let data: any[] = []
@@ -186,16 +193,16 @@ export function supplyDistrictSlashCity(length: number, order?: string) {
     data.push({ city: city.name, town: town })
   }
   return data.map(data => data.town + '/ ' + data.city)
-/* 
-  return data.sort((a, b) => {
-      if (a.city == b.city) {
-        return a.town.localeCompare(b.town, 'tr-TR', { sensitivity: 'base' })
-      }
-      return a.city.localeCompare(b.city, 'tr-TR', { sensitivity: 'base' })
-    })
-    .map(data => data.town + ' / ' + data.city)
- */
-  }
+  /* 
+    return data.sort((a, b) => {
+        if (a.city == b.city) {
+          return a.town.localeCompare(b.town, 'tr-TR', { sensitivity: 'base' })
+        }
+        return a.city.localeCompare(b.city, 'tr-TR', { sensitivity: 'base' })
+      })
+      .map(data => data.town + ' / ' + data.city)
+   */
+}
 
 export function supplyDistrictsOfAnkara(length: number, order?: string) {
   let towns: string[] = []
@@ -254,24 +261,60 @@ export function supplyDistrictsOfIstanbul(length: number, order?: string) {
 export function supplyCountry(length: number, order: string) {
   let data: string[] = []
   let names = countries.map(country => country.name)
-    switch (order) {
-      case 'ascending':
-        names = orderAscendingData(names)
-        for (let i = 0; i < length; i++) {
-          data.push(names[i % names.length])
-        }
-        break
-      case 'descending':
-        names = orderDescendingData(names)
-        for (let i = 0; i < length; i++) {
-          data.push(names[i % names.length])
-        }
-        break
-      default:
-        for (let i = 0; i < length; i++) {
-          data.push(names[Math.floor(Math.random() * names.length)])
-        }
-        break
-    }
+  switch (order) {
+    case 'ascending':
+      names = orderAscendingData(names)
+      for (let i = 0; i < length; i++) {
+        data.push(names[i % names.length])
+      }
+      break
+    case 'descending':
+      names = orderDescendingData(names)
+      for (let i = 0; i < length; i++) {
+        data.push(names[i % names.length])
+      }
+      break
+    default:
+      for (let i = 0; i < length; i++) {
+        data.push(names[Math.floor(Math.random() * names.length)])
+      }
+      break
+  }
   return data
+}
+
+export function supplyCityToCity(length: number, order?: string) {
+  let data: string[] = []
+  let names = cities.map(city => city.name)
+  for (let i = 0; i < length; i++) {
+    let city = names[Math.floor(Math.random() * names.length)]
+    data.push(city + " - " + names.filter(name => name != city)[Math.floor(Math.random() * (names.length - 1))])
+  }
+  switch (order) {
+    case 'ascending':
+      return orderAscendingData(data)
+    case 'descending':
+      return orderDescendingData(data)
+    default:
+      return data
+  }
+}
+
+export function supplyDistrictToDistrict(length: number, order?: string) {
+  let data: string[] = []
+  let names = cities.find(city => city.name == 'İstanbul')?.towns
+  if (names !== undefined) {
+    for (let i = 0; i < length; i++) {
+      let district = names[Math.floor(Math.random() * names.length)]
+      data.push(district + " - " + names.filter(name => name != district)[Math.floor(Math.random() * (names.length - 1))])
+    }
+  }
+  switch (order) {
+    case 'ascending':
+      return orderAscendingData(data)
+    case 'descending':
+      return orderDescendingData(data)
+    default:
+      return data
+  }
 }

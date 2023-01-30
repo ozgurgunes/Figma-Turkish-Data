@@ -1,4 +1,6 @@
-# Preact Rectangles
+# Figma Turkish Data
+
+Turkish Data plugin for Figma, provides names, locations, business titles and dates/times in various formats.
 
 ## Development guide
 
