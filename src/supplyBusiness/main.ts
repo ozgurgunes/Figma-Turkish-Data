@@ -3,7 +3,7 @@ import {
   showUI,
   setRelaunchButton, EventHandler, traverseNode
 } from "@create-figma-plugin/utilities";
-import { orderAscendingData, orderDescendingData, orderRandomData, getSelectedTextNodes } from '../utils'
+import { orderAscendingString, orderDescendingString, orderRandomString, getSelectedTextNodes } from '../utils'
 
 import industries from '../turkishData/businessIndustry'
 import occupations from '../turkishData/businessOccupation'
@@ -53,20 +53,20 @@ export default async function (): Promise<void> {
   showUI(
     {
       width: 240,
-      height: 368,
+      height: 288,
     },
     { lastOrder: lastOrder }
   )
 }
 
 async function supplyBusinesss(supplierFunction: Function, options: Options) {
-  let orderFunction: Function = orderRandomData
+  let orderFunction: Function = orderRandomString
   switch (options.order) {
     case 'ascending':
-      orderFunction = orderAscendingData
+      orderFunction = orderAscendingString
       break
     case 'descending':
-      orderFunction = orderDescendingData
+      orderFunction = orderDescendingString
       break
     default:
       break

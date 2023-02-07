@@ -5,11 +5,10 @@ import {
   EventHandler,
 } from '@create-figma-plugin/utilities'
 import {
-  orderAscendingData,
-  orderDescendingData,
-  orderRandomData,
+  orderAscendingString,
+  orderDescendingString,
+  orderRandomString,
   getSelectedTextNodes,
-  shuffle,
 } from '../utils'
 
 import maleNames from '../turkishData/nameMale'
@@ -48,26 +47,24 @@ export default async function (): Promise<void> {
   showUI(
     {
       width: 240,
-      height: 368,
+      height: 352,
     },
     {lastOrder: lastOrder, lastGender: lastGender}
   )
 }
 
 async function supplyNames(supplierFunction: Function, options: Options) {
-  console.log(options)
-  let orderFunction: Function = orderRandomData
+  let orderFunction: Function = orderRandomString
   switch (options.order) {
     case 'ascending':
-      orderFunction = orderAscendingData
+      orderFunction = orderAscendingString
       break
     case 'descending':
-      orderFunction = orderDescendingData
+      orderFunction = orderDescendingString
       break
     default:
       break
   }
-  //console.log(names)
   const selectedNodes = getSelectedTextNodes()
   const names = orderFunction(
     supplierFunction(selectedNodes.length, options.gender)

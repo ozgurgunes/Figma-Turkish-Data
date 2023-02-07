@@ -2,6 +2,7 @@ import {
   render,
   Container,
   Text,
+  Bold,
   VerticalSpace,
   Button,
   Divider,
@@ -14,10 +15,10 @@ import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
 import { DateHandler } from './main'
 
-function Plugin(props: { lastOrder: string, lastRange: string }) {
+function Plugin(props: { lastOrder: string; lastRange: string }) {
   const [orderValue, setOrderValue] = useState(props.lastOrder || 'random')
   const [rangeValue, setRangeValue] = useState(props.lastRange || 'year')
-  const [startValue, setStartValue] = useState((new Date().toLocaleString()))
+  const [startValue, setStartValue] = useState(new Date().toLocaleString())
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)
@@ -44,7 +45,7 @@ function Plugin(props: { lastOrder: string, lastRange: string }) {
   const options = {
     order: orderValue,
     range: rangeValue,
-    start: startValue
+    start: startValue,
   }
 
   const handleHhMmButtonClick = useCallback(() => {
@@ -80,11 +81,11 @@ function Plugin(props: { lastOrder: string, lastRange: string }) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text bold>Start</Text>
+      <Text><Bold>Start</Bold></Text>
       <VerticalSpace space="extraSmall" />
-      <Textbox onInput={handleStart} value={startValue} />      
+      <Textbox onInput={handleStart} value={startValue} />
       <VerticalSpace space="medium" />
-      <Text bold>Range</Text>
+      <Text><Bold>Range</Bold></Text>
       <VerticalSpace space="extraSmall" />
       <SegmentedControl
         onChange={handleRangeChange}
@@ -92,16 +93,14 @@ function Plugin(props: { lastOrder: string, lastRange: string }) {
         value={rangeValue}
       />
       <VerticalSpace space="medium" />
-      <Text bold>Order</Text>
+      <Text><Bold>Order</Bold></Text>
       <VerticalSpace space="extraSmall" />
       <SegmentedControl
         onChange={handleOrderChange}
         options={orderOptions}
         value={orderValue}
       />
-      <VerticalSpace space="medium" />
-      <Divider />
-      <VerticalSpace space="medium" />
+      <VerticalSpace space="large" />
       <Button secondary fullWidth onClick={handleHhMmButtonClick}>
         HH:mm
       </Button>

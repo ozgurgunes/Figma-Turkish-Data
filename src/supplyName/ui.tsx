@@ -2,12 +2,10 @@ import {
   render,
   Container,
   Text,
+  Bold,
   Divider,
-  Toggle,
-  Checkbox,
   VerticalSpace,
   Button,
-  Inline,
   SegmentedControl,
   SegmentedControlOption,
 } from '@create-figma-plugin/ui'
@@ -15,10 +13,8 @@ import { h, JSX, options } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
 import { NameHandler } from './main'
-import styles from '../styles.css'
 
-function Plugin(props: { lastOrder: string, lastGender: string }) {
-  // CHECKBOX
+function Plugin(props: { lastOrder: string; lastGender: string }) {
   const [orderValue, setOrderValue] = useState(props.lastOrder || 'random')
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
@@ -61,24 +57,24 @@ function Plugin(props: { lastOrder: string, lastGender: string }) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text bold>Gender</Text>
+      <Text><Bold>Gender</Bold></Text>
       <VerticalSpace space="small" />
-      <SegmentedControl name='gender'
+      <SegmentedControl
+        name="gender"
         onChange={handleGenderChange}
         options={genderOptions}
         value={genderValue}
       />
       <VerticalSpace space="medium" />
-      <Text bold>Order</Text>
+      <Text><Bold>Order</Bold></Text>
       <VerticalSpace space="small" />
-      <SegmentedControl name='order'
+      <SegmentedControl
+        name="order"
         onChange={handleOrderChange}
         options={orderOptions}
         value={orderValue}
       />
-      <VerticalSpace space="medium" />
-      <Divider />
-      <VerticalSpace space="medium" />
+      <VerticalSpace space="large" />
       <Button secondary fullWidth onClick={handleFullNameButtonClick}>
         First Last
       </Button>

@@ -2,10 +2,9 @@ import {
   render,
   Container,
   Text,
+  Bold,
   VerticalSpace,
   Button,
-  Dropdown,
-  DropdownOption,
   SegmentedControl,
   SegmentedControlOption,
   Divider,
@@ -59,16 +58,14 @@ function Plugin(props: { lastOrder: string }) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text bold>Order</Text>
+      <Text><Bold>Order</Bold></Text>
       <VerticalSpace space="small" />
       <SegmentedControl
         onChange={handleOrderChange}
         options={orderOptions}
         value={orderValue}
       />
-      <VerticalSpace space="medium" />
-      <Divider />
-      <VerticalSpace space="medium" />
+      <VerticalSpace space="large" />
       <Button secondary fullWidth onClick={handleAddressButtonClick}>
         Address
       </Button>

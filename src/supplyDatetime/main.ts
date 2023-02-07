@@ -102,7 +102,7 @@ export default async function (): Promise<void> {
   showUI(
     {
       width: 240,
-      height: 616,
+      height: 600,
     },
     { lastOrder: lastOrder, lastRange: lastRange }
   )
@@ -136,7 +136,6 @@ async function getDates(
     default:
       break
   }
-  //console.log(names)
   const selectedNodes = getSelectedTextNodes()
   const dates = dateArrayFunction(selectedNodes.length, options)
   selectedNodes.forEach((textNode, i) => {

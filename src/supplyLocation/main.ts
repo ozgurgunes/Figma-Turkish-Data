@@ -6,9 +6,9 @@ import {
   traverseNode,
 } from '@create-figma-plugin/utilities'
 import {
-  orderAscendingData,
-  orderDescendingData,
-  orderRandomData,
+  orderAscendingString,
+  orderDescendingString,
+  orderRandomString,
   getSelectedTextNodes,
 } from '../utils'
 
@@ -77,20 +77,20 @@ export default async function (): Promise<void> {
   showUI(
     {
       width: 240,
-      height: 456,
+      height: 448,
     },
     { lastOrder: lastOrder }
   )
 }
 
 async function supplyLocations(supplierFunction: Function, options: Options) {
-  let orderFunction: Function = orderRandomData
+  let orderFunction: Function = orderRandomString
   switch (options.order) {
     case 'ascending':
-      orderFunction = orderAscendingData
+      orderFunction = orderAscendingString
       break
     case 'descending':
-      orderFunction = orderDescendingData
+      orderFunction = orderDescendingString
       break
     default:
       break
@@ -146,13 +146,13 @@ export function supplyCity(length: number, order?: string) {
   let names = cities.map(city => city.name)
   switch (order) {
     case 'ascending':
-      names = orderAscendingData(names)
+      names = orderAscendingString(names)
       for (let i = 0; i < length; i++) {
         data.push(names[i % names.length])
       }
       break
     case 'descending':
-      names = orderDescendingData(names)
+      names = orderDescendingString(names)
       for (let i = 0; i < length; i++) {
         data.push(names[i % names.length])
       }
@@ -210,13 +210,13 @@ export function supplyDistrictsOfAnkara(length: number, order?: string) {
   if (city !== undefined) {
     switch (order) {
       case 'ascending':
-        towns = orderAscendingData(city.towns)
+        towns = orderAscendingString(city.towns)
         for (let i = 0; i < length; i++) {
           towns.push(city.towns[i % city.towns.length])
         }
         break
       case 'descending':
-        towns = orderDescendingData(city.towns)
+        towns = orderDescendingString(city.towns)
         for (let i = 0; i < length; i++) {
           towns.push(city.towns[i % city.towns.length])
         }
@@ -237,13 +237,13 @@ export function supplyDistrictsOfIstanbul(length: number, order?: string) {
   if (city !== undefined) {
     switch (order) {
       case 'ascending':
-        towns = orderAscendingData(city.towns)
+        towns = orderAscendingString(city.towns)
         for (let i = 0; i < length; i++) {
           towns.push(city.towns[i % city.towns.length])
         }
         break
       case 'descending':
-        towns = orderDescendingData(city.towns)
+        towns = orderDescendingString(city.towns)
         for (let i = 0; i < length; i++) {
           towns.push(city.towns[i % city.towns.length])
         }
@@ -263,13 +263,13 @@ export function supplyCountry(length: number, order: string) {
   let names = countries.map(country => country.name)
   switch (order) {
     case 'ascending':
-      names = orderAscendingData(names)
+      names = orderAscendingString(names)
       for (let i = 0; i < length; i++) {
         data.push(names[i % names.length])
       }
       break
     case 'descending':
-      names = orderDescendingData(names)
+      names = orderDescendingString(names)
       for (let i = 0; i < length; i++) {
         data.push(names[i % names.length])
       }
@@ -290,14 +290,7 @@ export function supplyCityToCity(length: number, order?: string) {
     let city = names[Math.floor(Math.random() * names.length)]
     data.push(city + " - " + names.filter(name => name != city)[Math.floor(Math.random() * (names.length - 1))])
   }
-  switch (order) {
-    case 'ascending':
-      return orderAscendingData(data)
-    case 'descending':
-      return orderDescendingData(data)
-    default:
-      return data
-  }
+  return data
 }
 
 export function supplyDistrictToDistrict(length: number, order?: string) {
@@ -309,12 +302,5 @@ export function supplyDistrictToDistrict(length: number, order?: string) {
       data.push(district + " - " + names.filter(name => name != district)[Math.floor(Math.random() * (names.length - 1))])
     }
   }
-  switch (order) {
-    case 'ascending':
-      return orderAscendingData(data)
-    case 'descending':
-      return orderDescendingData(data)
-    default:
-      return data
-  }
+  return data
 }

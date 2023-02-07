@@ -2,16 +2,18 @@
 
 Turkish Data plugin for Figma, provides names, locations, business titles and dates/times in various formats.
 
+> :warning: This plugin requires to run on **Developer VM** to use JS locale functions! Follow [Development Guide](#install-the-plugin) for more information.
+
 ## Development guide
 
 *This plugin is built with [Create Figma Plugin](https://yuanqing.github.io/create-figma-plugin/).*
 
 ### Pre-requisites
 
-- [Node.js](https://nodejs.org) – v14
-- [Figma desktop app](https://figma.com/downloads/)
+- [Node.js](https://nodejs.org) – v18
+- [Figma Desktop App](https://figma.com/downloads/)
 
-### Build the plugin
+### Build The Plugin
 
 To build the plugin:
 
@@ -27,7 +29,7 @@ To watch for code changes and rebuild the plugin automatically:
 $ npm run watch
 ```
 
-### Install the plugin
+### Install The Plugin
 
 1. In the Figma desktop app, open a Figma document.
 2. Search for and run `Import plugin from manifest…` via the Quick Actions search bar.
@@ -39,12 +41,7 @@ Use `console.log` statements to inspect values in your code.
 
 To open the developer console, search for and run `Open Console` via the Quick Actions search bar.
 
-## See also
-
-- [Create Figma Plugin docs](https://yuanqing.github.io/create-figma-plugin/)
-- [`yuanqing/figma-plugins`](https://github.com/yuanqing/figma-plugins#readme)
-
-Official docs and code samples from Figma:
+### See also
 
 - [Plugin API docs](https://figma.com/plugin-docs/)
-- [`figma/plugin-samples`](https://github.com/figma/plugin-samples#readme)
+- [Create Figma Plugin Docs](https://yuanqing.github.io/create-figma-plugin/)

@@ -2,18 +2,17 @@ import {
   render,
   Container,
   Text,
+  Bold,
+  Divider,
   VerticalSpace,
   Button,
   SegmentedControl,
   SegmentedControlOption,
-  Divider,
-} from "@create-figma-plugin/ui";
-import { h, JSX } from "preact";
-import { emit } from "@create-figma-plugin/utilities";
-import { useCallback, useState } from "preact/hooks";
-import {
-  NameHandler
-} from "./main";
+} from '@create-figma-plugin/ui'
+import { h, JSX } from 'preact'
+import { emit } from '@create-figma-plugin/utilities'
+import { useCallback, useState } from 'preact/hooks'
+import { NameHandler } from './main'
 
 function Plugin(props: { lastOrder: string }) {
   const [orderValue, setOrderValue] = useState(props.lastOrder || 'random')
@@ -47,7 +46,7 @@ function Plugin(props: { lastOrder: string }) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text bold>Order</Text>
+      <Text><Bold>Order</Bold></Text>
       <VerticalSpace space="small" />
       <SegmentedControl
         onChange={handleOrderChange}
@@ -55,18 +54,28 @@ function Plugin(props: { lastOrder: string }) {
         value={orderValue}
       />
       <VerticalSpace space="large" />
-      <Button secondary fullWidth onClick={handleBusinessTitleButtonClick}>Business Title</Button>
+      <Button secondary fullWidth onClick={handleBusinessTitleButtonClick}>
+        Business Title
+      </Button>
       <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleCompanyNameButtonClick}>Company Name</Button>
+      <Button secondary fullWidth onClick={handleCompanyNameButtonClick}>
+        Company Name
+      </Button>
       <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleIndustryTitleButtonClick}>Industry Title</Button>
+      <Button secondary fullWidth onClick={handleIndustryTitleButtonClick}>
+        Industry Title
+      </Button>
       <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleOccupationButtonClick}>Occupation</Button>
+      <Button secondary fullWidth onClick={handleOccupationButtonClick}>
+        Occupation
+      </Button>
       <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleShopNameButtonClick}>Shop Name</Button>
+      <Button secondary fullWidth onClick={handleShopNameButtonClick}>
+        Shop Name
+      </Button>
       <VerticalSpace space="extraSmall" />
     </Container>
-  );
+  )
 }
 
-export default render(Plugin);
+export default render(Plugin)
