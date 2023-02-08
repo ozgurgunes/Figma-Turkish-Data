@@ -10,43 +10,40 @@ import {
   orderDescendingString,
   orderRandomString,
   getSelectedTextNodes,
+  supplyData,
 } from '../utils'
 
 import cities from '../turkishData/locationCity'
 import countries from '../turkishData/locationCountry'
 import addresses from '../turkishData/locationAddress'
 
-/* 
-  Address, 'Address'
-  City, 'City'
-  Country, 'Country'
-  District / City, 'DistrictSlashCity'
-  District, City, 'DistrictCommaCity'
-  Districts of Ankara, 'DistrictsOfAnkara'
-  Districts of Istanbul, 'DistrictsOfIstanbul'
-*/
-
-export interface Options {
+export interface PluginOptions {
+  pick: string
   order: string
 }
 
 export interface NameHandler extends EventHandler {
   name:
-  | 'ADDRESS'
-  | 'CITY'
-  | 'COUNTRY'
-  | 'DISTRICT_SLASH_CITY'
-  | 'DISTRICT_COMMA_CITY'
-  | 'DISTRICTS_OF_ANKARA'
-  | 'DISTRICTS_OF_ISTANBUL'
-  | 'CITY_TO_CITY'
-  | 'DISTRICT_TO_DISTRICT'
-  handler: (options: Options) => void
+    | 'ADDRESS'
+    | 'CITY'
+    | 'COUNTRY'
+    | 'DISTRICT_SLASH_CITY'
+    | 'DISTRICT_COMMA_CITY'
+    | 'CITY_COMMA_DISTRICT'
+    | 'DISTRICTS_OF_ANKARA'
+    | 'DISTRICTS_OF_ISTANBUL'
+    | 'CITY_TO_CITY'
+    | 'DISTRICT_TO_DISTRICT'
+  handler: (options: PluginOptions) => void
 }
 
 export default async function (): Promise<void> {
   setRelaunchButton(figma.currentPage, 'turkishLocation')
-  const lastOrder = await figma.clientStorage.getAsync('location.lastOrder')
+  const lastOptions = {
+    pick: await figma.clientStorage.getAsync('location.pick'),
+    order: await figma.clientStorage.getAsync('location.order'),
+  }
+
   on<NameHandler>('ADDRESS', options => {
     supplyLocations(supplyAddress, options)
   })
@@ -61,6 +58,9 @@ export default async function (): Promise<void> {
   })
   on<NameHandler>('DISTRICT_COMMA_CITY', options => {
     supplyLocations(supplyDistrictCommaCity, options)
+  })
+  on<NameHandler>('CITY_COMMA_DISTRICT', options => {
+    supplyLocations(supplyCityCommaDistrict, options)
   })
   on<NameHandler>('DISTRICTS_OF_ANKARA', options => {
     supplyLocations(supplyDistrictsOfAnkara, options)
@@ -79,12 +79,15 @@ export default async function (): Promise<void> {
       width: 240,
       height: 448,
     },
-    { lastOrder: lastOrder }
+    lastOptions
   )
 }
 
-async function supplyLocations(supplierFunction: Function, options: Options) {
-  let orderFunction: Function = orderRandomString
+async function supplyLocations(
+  supplierFunction: Function,
+  options: PluginOptions
+) {
+  let orderFunction: Function
   switch (options.order) {
     case 'ascending':
       orderFunction = orderAscendingString
@@ -93,21 +96,49 @@ async function supplyLocations(supplierFunction: Function, options: Options) {
       orderFunction = orderDescendingString
       break
     default:
+      orderFunction = orderRandomString
       break
   }
   const selectedNodes = getSelectedTextNodes()
-  const locations = orderFunction(
-    supplierFunction(selectedNodes.length, options.order)
-  )
-  selectedNodes.forEach((textNode, i) => {
-    figma.loadFontAsync(textNode.fontName as FontName).then(() => {
-      textNode.characters = locations[i]
-    })
-  })
-  figma.clientStorage.setAsync('location.lastOrder', options.order)
+  const locations = supplierFunction(selectedNodes.length, options)
+  supplyData(selectedNodes, orderFunction(locations))
+
+  figma.clientStorage.setAsync('location.pick', options.pick)
+  figma.clientStorage.setAsync('location.order', options.order)
 }
 
-function getAddresses(length: number) {
+function getRandomized(array: string[], length: number, options: PluginOptions) {
+  let locations: string[] = []
+  for (let i = 0; i < length; i++) {
+    locations.push(array[Math.floor(Math.random() * array.length)])
+  }
+  return locations
+
+}
+function getSequental(array: string[], length: number, options: PluginOptions) {
+  let orderFunction: Function
+  switch (options.order) {
+    case 'ascending':
+      orderFunction = orderAscendingString
+      break
+    case 'descending':
+      orderFunction = orderDescendingString
+      break
+    default:
+      orderFunction = orderRandomString
+      break
+  }
+
+  let locations: string[] = []
+  array = orderFunction(array)
+  for (let i = 0; i < length; i++) {
+    locations.push(array[i % array.length])
+  }
+  return locations
+
+}
+
+function supplyAddress(length: number, options: PluginOptions) {
   let data = []
   for (let i = 0; i < length; i++) {
     let address = ''
@@ -137,36 +168,23 @@ function getAddresses(length: number) {
   return data
 }
 
-export function supplyAddress(length: number, order?: string) {
-  return getAddresses(length)
-}
-
-export function supplyCity(length: number, order?: string) {
+function supplyCity(length: number, options: PluginOptions) {
   let data: string[] = []
   let names = cities.map(city => city.name)
-  switch (order) {
-    case 'ascending':
-      names = orderAscendingString(names)
-      for (let i = 0; i < length; i++) {
-        data.push(names[i % names.length])
-      }
-      break
-    case 'descending':
-      names = orderDescendingString(names)
-      for (let i = 0; i < length; i++) {
-        data.push(names[i % names.length])
-      }
+
+  switch (options.pick) {
+    case 'sequental':
+      data = getSequental(names, length, options)
       break
     default:
-      for (let i = 0; i < length; i++) {
-        data.push(names[Math.floor(Math.random() * names.length)])
-      }
+      data = getRandomized(names, length, options)
       break
   }
+
   return data
 }
 
-export function supplyDistrictCommaCity(length: number, order?: string) {
+function supplyDistrictCommaCity(length: number, options: PluginOptions) {
   let data: any[] = []
   for (let i = 0; i < length; i++) {
     let city = cities[Math.floor(Math.random() * cities.length)]
@@ -174,18 +192,19 @@ export function supplyDistrictCommaCity(length: number, order?: string) {
     data.push({ city: city.name, town: town })
   }
   return data.map(data => data.town + ', ' + data.city)
-  /* 
-    return data.sort((a, b) => {
-        if (a.city == b.city) {
-          return a.town.localeCompare(b.town, 'tr-TR', { sensitivity: 'base' })
-        }
-        return a.city.localeCompare(b.city, 'tr-TR', { sensitivity: 'base' })
-      })
-      .map(data => data.town + ', ' + data.city)
-   */
 }
 
-export function supplyDistrictSlashCity(length: number, order?: string) {
+function supplyCityCommaDistrict(length: number, options: PluginOptions) {
+  let data: any[] = []
+  for (let i = 0; i < length; i++) {
+    let city = cities[Math.floor(Math.random() * cities.length)]
+    let town = city.towns[Math.floor(Math.random() * city.towns.length)]
+    data.push({ city: city.name, town: town })
+  }
+  return data.map(data => data.city + ', ' + data.town)
+}
+
+function supplyDistrictSlashCity(length: number, options: PluginOptions) {
   let data: any[] = []
   for (let i = 0; i < length; i++) {
     let city = cities[Math.floor(Math.random() * cities.length)]
@@ -193,113 +212,85 @@ export function supplyDistrictSlashCity(length: number, order?: string) {
     data.push({ city: city.name, town: town })
   }
   return data.map(data => data.town + '/ ' + data.city)
-  /* 
-    return data.sort((a, b) => {
-        if (a.city == b.city) {
-          return a.town.localeCompare(b.town, 'tr-TR', { sensitivity: 'base' })
-        }
-        return a.city.localeCompare(b.city, 'tr-TR', { sensitivity: 'base' })
-      })
-      .map(data => data.town + ' / ' + data.city)
-   */
 }
 
-export function supplyDistrictsOfAnkara(length: number, order?: string) {
+function supplyDistrictsOfAnkara(length: number, options: PluginOptions) {
   let towns: string[] = []
   let city = cities.find(city => city.name == 'Ankara')
   if (city !== undefined) {
-    switch (order) {
-      case 'ascending':
-        towns = orderAscendingString(city.towns)
-        for (let i = 0; i < length; i++) {
-          towns.push(city.towns[i % city.towns.length])
-        }
-        break
-      case 'descending':
-        towns = orderDescendingString(city.towns)
-        for (let i = 0; i < length; i++) {
-          towns.push(city.towns[i % city.towns.length])
-        }
+    switch (options.pick) {
+      case 'sequental':
+        towns = getSequental(city.towns, length, options)
         break
       default:
-        for (let i = 0; i < length; i++) {
-          towns.push(city.towns[Math.floor(Math.random() * city.towns.length)])
-        }
+        towns = getRandomized(city.towns, length, options)
         break
     }
   }
   return towns
 }
 
-export function supplyDistrictsOfIstanbul(length: number, order?: string) {
+function supplyDistrictsOfIstanbul(length: number, options: PluginOptions) {
   let towns: string[] = []
   let city = cities.find(city => city.name == 'İstanbul')
+
   if (city !== undefined) {
-    switch (order) {
-      case 'ascending':
-        towns = orderAscendingString(city.towns)
-        for (let i = 0; i < length; i++) {
-          towns.push(city.towns[i % city.towns.length])
-        }
-        break
-      case 'descending':
-        towns = orderDescendingString(city.towns)
-        for (let i = 0; i < length; i++) {
-          towns.push(city.towns[i % city.towns.length])
-        }
+    switch (options.pick) {
+      case 'sequental':
+        towns = getSequental(city.towns, length, options)
         break
       default:
-        for (let i = 0; i < length; i++) {
-          towns.push(city.towns[Math.floor(Math.random() * city.towns.length)])
-        }
+        towns = getRandomized(city.towns, length, options)
         break
     }
   }
   return towns
 }
 
-export function supplyCountry(length: number, order: string) {
+function supplyCountry(length: number, options: PluginOptions) {
   let data: string[] = []
   let names = countries.map(country => country.name)
-  switch (order) {
-    case 'ascending':
-      names = orderAscendingString(names)
-      for (let i = 0; i < length; i++) {
-        data.push(names[i % names.length])
-      }
-      break
-    case 'descending':
-      names = orderDescendingString(names)
-      for (let i = 0; i < length; i++) {
-        data.push(names[i % names.length])
-      }
+
+  switch (options.pick) {
+    case 'sequental':
+      data = getSequental(names, length, options)
       break
     default:
-      for (let i = 0; i < length; i++) {
-        data.push(names[Math.floor(Math.random() * names.length)])
-      }
+      data = getRandomized(names, length, options)
       break
   }
   return data
 }
 
-export function supplyCityToCity(length: number, order?: string) {
+function supplyCityToCity(length: number, options: PluginOptions) {
   let data: string[] = []
   let names = cities.map(city => city.name)
   for (let i = 0; i < length; i++) {
     let city = names[Math.floor(Math.random() * names.length)]
-    data.push(city + " - " + names.filter(name => name != city)[Math.floor(Math.random() * (names.length - 1))])
+    data.push(
+      city +
+        ' - ' +
+        names.filter(name => name != city)[
+          Math.floor(Math.random() * (names.length - 1))
+        ]
+    )
   }
   return data
 }
 
-export function supplyDistrictToDistrict(length: number, order?: string) {
+function supplyDistrictToDistrict(length: number, options: PluginOptions) {
   let data: string[] = []
   let names = cities.find(city => city.name == 'İstanbul')?.towns
   if (names !== undefined) {
     for (let i = 0; i < length; i++) {
       let district = names[Math.floor(Math.random() * names.length)]
-      data.push(district + " - " + names.filter(name => name != district)[Math.floor(Math.random() * (names.length - 1))])
+      data.push(
+        district +
+          ' - ' +
+          names.filter(name => name != district)[
+            Math.floor(Math.random() * (names.length - 1))
+          ]
+      )
     }
   }
   return data

@@ -7,6 +7,7 @@ import {
   dateTimeFormats,
   orderDescendingDateTime,
   orderDescendingTime,
+  supplyData,
 } from '../utils'
 
 import {
@@ -28,9 +29,9 @@ type DateFormat =
   | 'DdMmYyyyHhMm'
   | 'DdMmmmYyyyDdddHhMm'
 
-export interface Options {
-  order: string,
-  range: string,
+export interface PluginOptions {
+  order: string
+  range: string
   start: string
 }
 
@@ -47,7 +48,7 @@ export interface DateHandler extends EventHandler {
     | 'DDMMYYYYHHMM'
     | 'DDMMMMYYYYDDDDHHMM'
 
-  handler: (options: Options) => void
+  handler: (options: PluginOptions) => void
 }
 
 /* 
@@ -67,87 +68,85 @@ export interface DateHandler extends EventHandler {
 
 export default async function (): Promise<void> {
   setRelaunchButton(figma.currentPage, 'turkishDateTime')
-  const lastOrder = await figma.clientStorage.getAsync('datetime.lastOrder')
-  const lastRange = await figma.clientStorage.getAsync('datetime.lastRange')
+  let lastOptions = {
+    order: await figma.clientStorage.getAsync('datetime.order'),
+    range: await figma.clientStorage.getAsync('datetime.range'),
+  }
+
+  function supplyDatetime(
+    supplierFunction: Function,
+    format: DateFormat,
+    options: PluginOptions
+  ) {
+    let orderFunction: Function
+    switch (options.order) {
+      case 'ascending':
+        orderFunction =
+          supplierFunction == getDateTimeArray
+            ? orderAscendingdDateTime
+            : orderAscendingTime
+        break
+      case 'descending':
+        orderFunction =
+          supplierFunction == getDateTimeArray
+            ? orderDescendingDateTime
+            : orderDescendingTime
+        break
+      default:
+        orderFunction =
+          supplierFunction == getDateTimeArray
+            ? orderRandomDateTime
+            : orderRandomTime
+        break
+    }
+    const selectedNodes = getSelectedTextNodes()
+    const dates = supplierFunction(selectedNodes.length, options)
+    supplyData(selectedNodes, orderFunction(dates, dateTimeFormats[format]))
+
+    figma.clientStorage.setAsync('datetime.order', options.order)
+    figma.clientStorage.setAsync('datetime.range', options.range)
+  }
+
   on<DateHandler>('HHMM', options => {
-    getDates(getTimeArray, 'HhMm', options)
+    supplyDatetime(getTimeArray, 'HhMm', options)
   })
   on<DateHandler>('HHMMSS', options => {
-    getDates(getTimeArray, 'HhMmSs', options)
+    supplyDatetime(getTimeArray, 'HhMmSs', options)
   })
   on<DateHandler>('DDMMYY', options => {
-    getDates(getDateTimeArray, 'DdMmYY', options)
+    supplyDatetime(getDateTimeArray, 'DdMmYY', options)
   })
   on<DateHandler>('DDMMYYYY', options => {
-    getDates(getDateTimeArray, 'DdMmYyyy', options)
+    supplyDatetime(getDateTimeArray, 'DdMmYyyy', options)
   })
   on<DateHandler>('DDMMMYYYY', options => {
-    getDates(getDateTimeArray, 'DdMmmYyyy', options)
+    supplyDatetime(getDateTimeArray, 'DdMmmYyyy', options)
   })
   on<DateHandler>('DDMMMMYYYY', options => {
-    getDates(getDateTimeArray, 'DdMmmmYyyy', options)
+    supplyDatetime(getDateTimeArray, 'DdMmmmYyyy', options)
   })
   on<DateHandler>('DDMMMMYYYYDDDD', options => {
-    getDates(getDateTimeArray, 'DdMmmmYyyyDddd', options)
+    supplyDatetime(getDateTimeArray, 'DdMmmmYyyyDddd', options)
   })
   on<DateHandler>('DDMMYYHHMM', options => {
-    getDates(getDateTimeArray, 'DdMmYyHhMm', options)
+    supplyDatetime(getDateTimeArray, 'DdMmYyHhMm', options)
   })
   on<DateHandler>('DDMMYYYYHHMM', options => {
-    getDates(getDateTimeArray, 'DdMmYyyyHhMm', options)
+    supplyDatetime(getDateTimeArray, 'DdMmYyyyHhMm', options)
   })
   on<DateHandler>('DDMMMMYYYYDDDDHHMM', options => {
-    getDates(getDateTimeArray, 'DdMmmmYyyyDdddHhMm', options)
+    supplyDatetime(getDateTimeArray, 'DdMmmmYyyyDdddHhMm', options)
   })
   showUI(
     {
       width: 240,
       height: 600,
     },
-    { lastOrder: lastOrder, lastRange: lastRange }
+    lastOptions
   )
 }
 
-async function getDates(
-  dateArrayFunction: Function,
-  format: DateFormat,
-  options: Options
-) {
-  let supplierFunction: Function
-  switch (options.order) {
-    case 'random':
-      supplierFunction =
-        dateArrayFunction == getDateTimeArray
-          ? orderRandomDateTime
-          : orderRandomTime
-      break
-    case 'ascending':
-      supplierFunction =
-        dateArrayFunction == getDateTimeArray
-          ? orderAscendingdDateTime
-          : orderAscendingTime
-      break
-    case 'descending':
-      supplierFunction =
-        dateArrayFunction == getDateTimeArray
-          ? orderDescendingDateTime
-          : orderDescendingTime
-      break
-    default:
-      break
-  }
-  const selectedNodes = getSelectedTextNodes()
-  const dates = dateArrayFunction(selectedNodes.length, options)
-  selectedNodes.forEach((textNode, i) => {
-    figma.loadFontAsync(textNode.fontName as FontName).then(() => {
-      textNode.characters = supplierFunction(dates, dateTimeFormats[format])[i]
-    })
-  })
-  figma.clientStorage.setAsync('datetime.lastOrder', options.order)
-  figma.clientStorage.setAsync('datetime.lastRange', options.range)
-}
-
-function getDateTimeArray(arrayLength: number, options: Options): Date[] {
+function getDateTimeArray(arrayLength: number, options: PluginOptions): Date[] {
   let start = new Date(Date.parse(options.start))
   let end = start
   let modifier = options.order == 'ascending' ? 1 : -1
@@ -155,29 +154,32 @@ function getDateTimeArray(arrayLength: number, options: Options): Date[] {
   //let end = new Date(new Date().setFullYear(start.getFullYear() - 2))
   switch (options.range) {
     case 'hour':
-      end = new Date(new Date().setHours(start.getHours() - (1 * modifier)))
+      end = new Date(new Date().setHours(start.getHours() - 1 * modifier))
       break
     case 'day':
-      end = new Date(Number(start) - (24 * 60 * 60 * 1000 * modifier))
+      end = new Date(Number(start) - 24 * 60 * 60 * 1000 * modifier)
       break
     case 'month':
-      end = new Date(new Date().setMonth(start.getMonth() - (1 * modifier)))
+      end = new Date(new Date().setMonth(start.getMonth() - 1 * modifier))
       break
     default:
-      end = new Date(new Date().setFullYear(start.getFullYear() - (1 * modifier)))
+      end = new Date(new Date().setFullYear(start.getFullYear() - 1 * modifier))
       break
   }
-  let range = options.order == 'ascending' ? start.getTime() - end.getTime() : end.getTime() - start.getTime()
+  let range =
+    options.order == 'ascending'
+      ? start.getTime() - end.getTime()
+      : end.getTime() - start.getTime()
   let dates: Date[] = []
   let i = 0
   while (i < arrayLength) {
-    dates.push(new Date(start.getTime() + (Math.random() * range * modifier)))
+    dates.push(new Date(start.getTime() + Math.random() * range * modifier))
     i++
   }
   return dates
 }
 
-function getTimeArray(arrayLength: number, options: Options) {
+function getTimeArray(arrayLength: number, options: PluginOptions) {
   let start = new Date(Date.parse(options.start))
   let end = start
   let modifier = options.order == 'ascending' ? 1 : -1
@@ -185,23 +187,26 @@ function getTimeArray(arrayLength: number, options: Options) {
   //let end = new Date(new Date().setFullYear(start.getFullYear() - 2))
   switch (options.range) {
     case 'hour':
-      end = new Date(new Date().setHours(start.getHours() - (1 * modifier)))
+      end = new Date(new Date().setHours(start.getHours() - 1 * modifier))
       break
     case 'day':
-      end = new Date(Number(start) - (24 * 60 * 60 * 1000 * modifier))
+      end = new Date(Number(start) - 24 * 60 * 60 * 1000 * modifier)
       break
     case 'month':
-      end = new Date(new Date().setMonth(start.getMonth() - (1 * modifier)))
+      end = new Date(new Date().setMonth(start.getMonth() - 1 * modifier))
       break
     default:
-      end = new Date(new Date().setFullYear(start.getFullYear() - (1 * modifier)))
+      end = new Date(new Date().setFullYear(start.getFullYear() - 1 * modifier))
       break
   }
-  let range = options.order == 'ascending' ? start.getTime() - end.getTime() : end.getTime() - start.getTime()
+  let range =
+    options.order == 'ascending'
+      ? start.getTime() - end.getTime()
+      : end.getTime() - start.getTime()
   let times = []
   let i = 0
   while (i < arrayLength) {
-    times.push(new Date(start.getTime() + (Math.random() * range * modifier)))
+    times.push(new Date(start.getTime() + Math.random() * range * modifier))
     i++
   }
   return times

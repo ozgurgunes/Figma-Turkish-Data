@@ -3,7 +3,6 @@ import {
   Container,
   Text,
   Bold,
-  Divider,
   VerticalSpace,
   Button,
   SegmentedControl,
@@ -12,10 +11,10 @@ import {
 import { h, JSX } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
-import { NameHandler } from './main'
+import { NameHandler, PluginOptions } from './main'
 
-function Plugin(props: { lastOrder: string }) {
-  const [orderValue, setOrderValue] = useState(props.lastOrder || 'random')
+function Plugin(props: PluginOptions) {
+  const [orderValue, setOrderValue] = useState(props.order || 'random')
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)
@@ -46,7 +45,9 @@ function Plugin(props: { lastOrder: string }) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text><Bold>Order</Bold></Text>
+      <Text>
+        <Bold>Order</Bold>
+      </Text>
       <VerticalSpace space="small" />
       <SegmentedControl
         onChange={handleOrderChange}

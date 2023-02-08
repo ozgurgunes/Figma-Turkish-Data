@@ -10,9 +10,10 @@ import {
   orderRandomString,
   getSelectedTextNodes,
   shuffle,
+  supplyData,
 } from '../utils'
 
-export interface Options {
+export interface PluginOptions {
   order: string
   symbol: string
   decimal: string
@@ -23,25 +24,77 @@ export interface Options {
 
 export interface NameHandler extends EventHandler {
   name: 'PRICE' | 'SEQUENCE' | 'TOTAL'
-  handler: (options: Options) => void
+  handler: (options: PluginOptions) => void
 }
 
 export default async function (): Promise<void> {
   setRelaunchButton(figma.currentPage, 'turkishPrice')
-  const lastOrder = await figma.clientStorage.getAsync('price.lastOrder')
-  const lastSymbol = await figma.clientStorage.getAsync('price.lastSymbol')
-  const lastDecimal = await figma.clientStorage.getAsync('price.lastDecimal')
-  const lastMin = await figma.clientStorage.getAsync('price.lastMin')
-  const lastMax = await figma.clientStorage.getAsync('price.lastMax')
-  on<NameHandler>('PRICE', function (options) {
-    console.log(globalThis)
-    supplyPrices(getPrices, options)
+  let lastOptions = {
+    order: await figma.clientStorage.getAsync('price.order'),
+    symbol: await figma.clientStorage.getAsync('price.symbol'),
+    decimal: await figma.clientStorage.getAsync('price.decimal'),
+    min: await figma.clientStorage.getAsync('price.min'),
+    max: await figma.clientStorage.getAsync('price.max'),
+    total: String(getTotal()),
+  }
+
+  function saveOptions(options: PluginOptions) {
+    figma.clientStorage.setAsync('price.order', options.order)
+    figma.clientStorage.setAsync('price.symbol', options.symbol)
+    figma.clientStorage.setAsync('price.decimal', options.decimal)
+    figma.clientStorage.setAsync('price.min', options.min)
+    figma.clientStorage.setAsync('price.max', options.max)
+  }
+
+  function supplyPrices(supplierFunction: Function, options: PluginOptions) {
+    let orderFunction: Function
+    switch (options.order) {
+      case 'ascending':
+        orderFunction = orderAscendingString
+        break
+      case 'descending':
+        orderFunction = orderDescendingString
+        break
+      default:
+        orderFunction = orderRandomString
+        break
+    }
+    const selectedNodes = getSelectedTextNodes()
+    const prices = supplierFunction(selectedNodes.length, options)
+    supplyData(selectedNodes, orderFunction(prices))
     saveOptions(options)
+  }
+
+  function supplySequence(supplierFunction: Function, options: PluginOptions) {
+    let orderFunction: Function
+    switch (options.order) {
+      case 'ascending':
+        orderFunction = (arr: number[]) =>
+          arr.sort((a: number, b: number) => (a > b ? 1 : -1))
+        break
+      case 'descending':
+        orderFunction = (arr: number[]) =>
+          arr.sort((a: number, b: number) => (a < b ? 1 : -1))
+        break
+      default:
+        orderFunction = shuffle
+        break
+    }
+    const selectedNodes = getSelectedTextNodes()
+    const squence = orderFunction(
+      supplierFunction(selectedNodes.length, options)
+    )
+    supplyData(selectedNodes, orderFunction(squence))
+    saveOptions(options)
+  }
+
+  on<NameHandler>('PRICE', function (options) {
+    supplyPrices(getPrices, options)
   })
   on<NameHandler>('SEQUENCE', function (options) {
     supplySequence(getSequence, options)
-    saveOptions(options)
   })
+
   figma.on('selectionchange', function () {
     figma.ui.postMessage({ newTotal: getTotal() })
   })
@@ -54,70 +107,11 @@ export default async function (): Promise<void> {
       width: 240,
       height: 408,
     },
-    {
-      lastOrder: lastOrder,
-      lastSymbol: lastSymbol,
-      lastDecimal: lastDecimal,
-      lastMin: lastMin,
-      lastMax: lastMax,
-      total: String(getTotal()),
-    }
+    lastOptions
   )
 }
 
-async function saveOptions(options: Options) {
-  figma.clientStorage.setAsync('price.lastOrder', options.order)
-  figma.clientStorage.setAsync('price.lastSymbol', options.symbol)
-  figma.clientStorage.setAsync('price.lastDecimal', options.decimal)
-  figma.clientStorage.setAsync('price.lastMin', options.min)
-  figma.clientStorage.setAsync('price.lastMax', options.max)
-}
-
-async function supplyPrices(supplierFunction: Function, options: Options) {
-  let orderFunction: Function = orderRandomString
-  switch (options.order) {
-    case 'ascending':
-      orderFunction = orderAscendingString
-      break
-    case 'descending':
-      orderFunction = orderDescendingString
-      break
-    default:
-      break
-  }
-  const selectedNodes = getSelectedTextNodes()
-  const prices = orderFunction(supplierFunction(selectedNodes.length, options))
-  selectedNodes.forEach((textNode, i) => {
-    figma.loadFontAsync(textNode.fontName as FontName).then(() => {
-      textNode.characters = prices[i]
-    })
-  })
-}
-
-async function supplySequence(supplierFunction: Function, options: Options) {
-  let orderFunction: Function = orderRandomString
-  const selectedNodes = getSelectedTextNodes()
-  const squence = orderFunction(supplierFunction(selectedNodes.length, options))
-  switch (options.order) {
-    case 'ascending':
-      squence.sort((a: number, b: number) => (a > b ? 1 : -1))
-      break
-    case 'descending':
-      squence.sort((a: number, b: number) => (a < b ? 1 : -1))
-      break
-    default:
-      shuffle(squence)
-      break
-  }
-
-  selectedNodes.forEach((textNode, i) => {
-    figma.loadFontAsync(textNode.fontName as FontName).then(() => {
-      textNode.characters = String(squence[i])
-    })
-  })
-}
-
-function getPrices(length: number, options: Options) {
+function getPrices(length: number, options: PluginOptions) {
   let prices: string[] = []
   let fractions = {}
   for (let i = 0; i < length; i++) {
@@ -155,7 +149,7 @@ function getPrices(length: number, options: Options) {
   return prices
 }
 
-function getSequence(length: number, options: Options) {
+function getSequence(length: number, options: PluginOptions) {
   let squence: number[] = []
   for (let i = 0; i < length; i++) {
     squence.push(parseInt(options.min) + i)

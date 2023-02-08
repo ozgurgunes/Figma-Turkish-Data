@@ -13,12 +13,12 @@ import {
 import { h, JSX } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
-import { PhoneHandler } from './main'
+import { PhoneHandler, PluginOptions } from './main'
 
-function Plugin(props: { lastOrder: string; lastCountry: string; lastArea: string }) {
-  const [orderValue, setOrderValue] = useState(props.lastOrder || 'random')
-  const [countryValue, setCountryValue] = useState(props.lastCountry)
-  const [areaValue, setAreaValue] = useState(props.lastArea)
+function Plugin(props: PluginOptions) {
+  const [orderValue, setOrderValue] = useState(props.order || 'random')
+  const [countryValue, setCountryValue] = useState(props.country)
+  const [areaValue, setAreaValue] = useState(props.area)
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)

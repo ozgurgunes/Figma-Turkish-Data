@@ -13,7 +13,7 @@ import {
   EventHandler,
 } from '@create-figma-plugin/utilities'
 
-export interface Options {
+export interface PluginOptions {
   order: string
   country: string
   area: string
@@ -37,113 +37,155 @@ export interface PhoneHandler extends EventHandler {
     | 'COUNTRY_COMBINED'
     | 'AREA_COMBINED'
 
-  handler: (options: Options) => void
+  handler: (options: PluginOptions) => void
 }
 
 export default async function (): Promise<void> {
   setRelaunchButton(figma.currentPage, 'turkishPhone')
-  let options = await getOptions()  
+  let lastOptions = {
+    order: await figma.clientStorage.getAsync('phone.order'),
+    country: await figma.clientStorage.getAsync('phone.country'),
+    area: await figma.clientStorage.getAsync('phone.area'),
+  }
+
+  function supplyPhones(phoneArrayFunction: Function, options: PluginOptions) {
+    let selectedNodes = getSelectedTextNodes()
+    let phoneFunctions = {
+      country: () =>
+        options.country
+          ? options.country
+          : Math.floor(Math.random() * (99 - 1) + 1),
+      area: () =>
+        options.area
+          ? options.area
+          : Math.floor(Math.random() * (599 - 500) + 500),
+      number: () => Math.floor(Math.random() * (9999999 - 1000000) + 1000000),
+    }
+
+    let phones = phoneArrayFunction(selectedNodes.length, phoneFunctions)
+    let orderFunction: Function
+    switch (options.order) {
+      case 'ascending':
+        orderFunction = orderAscendingString
+        break
+      case 'descending':
+        orderFunction = orderDescendingString
+        break
+      default:
+        orderFunction = orderRandomString
+        break
+    }
+
+    supplyData(selectedNodes, orderFunction(phones))
+
+    figma.clientStorage.setAsync('phone.order', options.order)
+    figma.clientStorage.setAsync('phone.country', options.country)
+    figma.clientStorage.setAsync('phone.area', options.area)
+  }
 
   on<PhoneHandler>('PLUS_COUNTRY_PARENTHESIS', options => {
     supplyPhones(getPlusCountryParenthesisPhones, options)
-    saveOptions(options)
   })
   on<PhoneHandler>('PLUS_COUNTRY_SIMPLE', options => {
     supplyPhones(getPlusCountrySimplePhones, options)
-    saveOptions(options)
   })
   on<PhoneHandler>('COUNTRY_PARENTHESIS', options => {
     supplyPhones(getCountryParenthesisPhones, options)
-    saveOptions(options)
   })
   on<PhoneHandler>('COUNTRY_SIMPLE', options => {
     supplyPhones(getCountrySimplePhones, options)
-    saveOptions(options)
   })
   on<PhoneHandler>('AREA_PARENTHESIS', options => {
     supplyPhones(getAreaParenthesisPhones, options)
-    saveOptions(options)
   })
   on<PhoneHandler>('AREA_SIMPLE', options => {
     supplyPhones(getAreaSimplePhones, options)
-    saveOptions(options)
   })
   on<PhoneHandler>('PLUS_COUNTRY_COMBINED', options => {
     supplyPhones(getPlusCountryCombinedPhones, options)
-    saveOptions(options)
   })
   on<PhoneHandler>('COUNTRY_COMBINED', options => {
     supplyPhones(getCountryCombinedPhones, options)
-    saveOptions(options)
   })
   on<PhoneHandler>('AREA_COMBINED', options => {
     supplyPhones(getAreaCombinedPhones, options)
-    saveOptions(options)
   })
   showUI(
     {
       width: 240,
       height: 520,
     },
-    { lastOrder: options.lastOrder, lastCountry: options.lastCountry, lastArea: options.lastArea }
+    lastOptions
   )
 }
 
-async function getOptions () {
-  return {
-    lastOrder: await figma.clientStorage.getAsync('phone.lastOrder'),
-    lastCountry: await figma.clientStorage.getAsync('phone.lastCountry'),
-    lastArea: await figma.clientStorage.getAsync('phone.lastArea')
-  }
-}
-
-async function saveOptions(options:Options) {
-  figma.clientStorage.setAsync('phone.lastOrder', options.order)
-  figma.clientStorage.setAsync('phone.lastCountry', options.country)
-  figma.clientStorage.setAsync('phone.lastArea', options.area)
-}
-
-
-async function supplyPhones(phoneFormatFunction: Function, options: Options) {
-  let selectedNodes = getSelectedTextNodes()
-  let phoneFunctions = {
-    country: () => options.country ? options.country : Math.floor(Math.random() * (99 - 1) + 1),
-    area: () => options.area ? options.area : Math.floor(Math.random() * (599 - 500) + 500),
-    number: () => Math.floor(Math.random() * (9999999 - 1000000) + 1000000)
-  }
+function getPlusCountryParenthesisPhones(length: number, phone: PhoneFunctions) {
   let phones: string[] = []
-  for (let i = 0; i < selectedNodes.length; i++) {
-    phones.push(phoneFormatFunction(phoneFunctions))
+  for (let i = 0; i < length; i++) {
+    phones.push(`+${phone.country()} (${phone.area()}) ${phone.number()}`)
   }
-
-  await supplyData(selectedNodes, phones)
+  return phones
 }
 
-function getPlusCountryParenthesisPhones(phone: PhoneFunctions) {
-  return `+${phone.country()} (${phone.area()}) ${phone.number()}`
+function getPlusCountrySimplePhones(length: number, phone: PhoneFunctions) {
+  let phones: string[] = []
+  for (let i = 0; i < length; i++) {
+    phones.push(`+${phone.country()} ${phone.area()} ${phone.number()}`)
+  }
+  return phones
+}
+function getCountryParenthesisPhones(length: number, phone: PhoneFunctions) {
+  let phones: string[] = []
+  for (let i = 0; i < length; i++) {
+    phones.push(`${phone.country()} (${phone.area()}) ${phone.number()}`)
+  }
+  return phones
 }
 
-function getPlusCountrySimplePhones(phone: PhoneFunctions) {
-  return `+${phone.country()} ${phone.area()} ${phone.number()}`
+function getCountrySimplePhones(length: number, phone: PhoneFunctions) {
+  let phones: string[] = []
+  for (let i = 0; i < length; i++) {
+    phones.push(`${phone.country()} ${phone.area()} ${phone.number()}`)
+  }
+  return phones
 }
-function getCountryParenthesisPhones(phone: PhoneFunctions) {
-  return `${phone.country()} (${phone.area()}) ${phone.number()}`
+
+function getAreaParenthesisPhones(length: number, phone: PhoneFunctions) {
+  let phones: string[] = []
+  for (let i = 0; i < length; i++) {
+    phones.push(`(${phone.area()}) ${phone.number()}`)
+  }
+  return phones
 }
-function getCountrySimplePhones(phone: PhoneFunctions) {
-  return `${phone.country()} ${phone.area()} ${phone.number()}`
+
+function getAreaSimplePhones(length: number, phone: PhoneFunctions) {
+  let phones: string[] = []
+  for (let i = 0; i < length; i++) {
+    phones.push(`${phone.area()} ${phone.number()}`)
+  }
+  return phones
 }
-function getAreaParenthesisPhones(phone: PhoneFunctions) {
-  return `(${phone.area()}) ${phone.number()}`
+
+function getPlusCountryCombinedPhones(length: number, phone: PhoneFunctions) {
+  let phones: string[] = []
+  for (let i = 0; i < length; i++) {
+    phones.push(`+${phone.country()}${phone.area()}${phone.number()}`)
+  }
+  return phones
 }
-function getAreaSimplePhones(phone: PhoneFunctions) {
-  return `${phone.area()} ${phone.number()}`
+
+function getCountryCombinedPhones(length: number, phone: PhoneFunctions) {
+  let phones: string[] = []
+  for (let i = 0; i < length; i++) {
+    phones.push(`${phone.country()}${phone.area()}${phone.number()}`)
+  }
+  return phones
 }
-function getPlusCountryCombinedPhones(phone: PhoneFunctions) {
-  return `+${phone.country()}${phone.area()}${phone.number()}`
-}
-function getCountryCombinedPhones(phone: PhoneFunctions) {
-  return `${phone.country()}${phone.area()}${phone.number()}`
-}
-function getAreaCombinedPhones(phone: PhoneFunctions) {
-  return `${phone.area()}${phone.number()}`
+
+function getAreaCombinedPhones(length: number, phone: PhoneFunctions) {
+  let phones: string[] = []
+  for (let i = 0; i < length; i++) {
+    phones.push(`${phone.area()}${phone.number()}`)
+  }
+  return phones
 }

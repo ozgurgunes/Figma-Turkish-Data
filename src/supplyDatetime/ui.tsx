@@ -5,7 +5,6 @@ import {
   Bold,
   VerticalSpace,
   Button,
-  Divider,
   SegmentedControl,
   SegmentedControlOption,
   Textbox,
@@ -13,11 +12,11 @@ import {
 import { h, JSX } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
-import { DateHandler } from './main'
+import { DateHandler, PluginOptions } from './main'
 
-function Plugin(props: { lastOrder: string; lastRange: string }) {
-  const [orderValue, setOrderValue] = useState(props.lastOrder || 'random')
-  const [rangeValue, setRangeValue] = useState(props.lastRange || 'year')
+function Plugin(props: PluginOptions) {
+  const [orderValue, setOrderValue] = useState(props.order || 'random')
+  const [rangeValue, setRangeValue] = useState(props.range || 'year')
   const [startValue, setStartValue] = useState(new Date().toLocaleString())
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value

@@ -7,25 +7,34 @@ import {
   Button,
   SegmentedControl,
   SegmentedControlOption,
-  Divider,
 } from '@create-figma-plugin/ui'
 import { h, JSX } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
-import { NameHandler } from './main'
+import { NameHandler, PluginOptions } from './main'
 
-function Plugin(props: { lastOrder: string }) {
-  const [orderValue, setOrderValue] = useState(props.lastOrder || 'random')
+function Plugin(props: PluginOptions) {
+  const [pickValue, setPickValue] = useState(props.pick || 'random')
+  const [orderValue, setOrderValue] = useState(props.order || 'random')
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)
   }
+  function handlePickChange(event: JSX.TargetedEvent<HTMLInputElement>) {
+    const newValue = event.currentTarget.value
+    setPickValue(newValue)
+  }
+  const pickOptions: Array<SegmentedControlOption> = [
+    { value: 'randomized', children: 'Randomized' },
+    { value: 'sequental', children: 'Sequental' },
+  ]
   const orderOptions: Array<SegmentedControlOption> = [
     { value: 'random', children: 'Random' },
     { value: 'ascending', children: 'A -> Z' },
     { value: 'descending', children: 'Z -> A' },
   ]
   const options = {
+    pick: pickValue,
     order: orderValue,
   }
   const handleAddressButtonClick = useCallback(() => {
@@ -43,6 +52,9 @@ function Plugin(props: { lastOrder: string }) {
   const handleDistrictCommaCityButtonClick = useCallback(() => {
     emit<NameHandler>('DISTRICT_COMMA_CITY', options)
   }, [options])
+  const handleCityCommaDistrictButtonClick = useCallback(() => {
+    emit<NameHandler>('CITY_COMMA_DISTRICT', options)
+  }, [options])
   const handleDistrictsOfAnkaraButtonClick = useCallback(() => {
     emit<NameHandler>('DISTRICTS_OF_ANKARA', options)
   }, [options])
@@ -57,6 +69,14 @@ function Plugin(props: { lastOrder: string }) {
   }, [options])
   return (
     <Container space="medium">
+      <VerticalSpace space="medium" />
+      <Text><Bold>Pick</Bold></Text>
+      <VerticalSpace space="small" />
+      <SegmentedControl
+        onChange={handlePickChange}
+        options={pickOptions}
+        value={pickValue}
+      />
       <VerticalSpace space="medium" />
       <Text><Bold>Order</Bold></Text>
       <VerticalSpace space="small" />
@@ -84,6 +104,10 @@ function Plugin(props: { lastOrder: string }) {
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDistrictCommaCityButtonClick}>
         District, City
+      </Button>
+      <VerticalSpace space="extraSmall" />
+      <Button secondary fullWidth onClick={handleCityCommaDistrictButtonClick}>
+        City, District
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDistrictsOfAnkaraButtonClick}>

@@ -3,24 +3,23 @@ import {
   Container,
   Text,
   Bold,
-  Divider,
   VerticalSpace,
   Button,
   SegmentedControl,
   SegmentedControlOption,
 } from '@create-figma-plugin/ui'
-import { h, JSX, options } from 'preact'
+import { h, JSX } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
-import { NameHandler } from './main'
+import { NameHandler, PluginOptions } from './main'
 
-function Plugin(props: { lastOrder: string; lastGender: string }) {
-  const [orderValue, setOrderValue] = useState(props.lastOrder || 'random')
+function Plugin(props: PluginOptions) {
+  const [orderValue, setOrderValue] = useState(props.order || 'random')
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)
   }
-  const [genderValue, setGenderValue] = useState(props.lastGender || 'all')
+  const [genderValue, setGenderValue] = useState(props.gender || 'all')
   function handleGenderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setGenderValue(newValue)
@@ -57,7 +56,9 @@ function Plugin(props: { lastOrder: string; lastGender: string }) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text><Bold>Gender</Bold></Text>
+      <Text>
+        <Bold>Gender</Bold>
+      </Text>
       <VerticalSpace space="small" />
       <SegmentedControl
         name="gender"
@@ -66,7 +67,9 @@ function Plugin(props: { lastOrder: string; lastGender: string }) {
         value={genderValue}
       />
       <VerticalSpace space="medium" />
-      <Text><Bold>Order</Bold></Text>
+      <Text>
+        <Bold>Order</Bold>
+      </Text>
       <VerticalSpace space="small" />
       <SegmentedControl
         name="order"

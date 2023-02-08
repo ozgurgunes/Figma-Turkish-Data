@@ -1,89 +1,94 @@
 import {
   on,
   showUI,
-  setRelaunchButton, EventHandler, traverseNode
-} from "@create-figma-plugin/utilities";
-import { orderAscendingString, orderDescendingString, orderRandomString, getSelectedTextNodes } from '../utils'
+  setRelaunchButton,
+  EventHandler,
+} from '@create-figma-plugin/utilities'
+import {
+  orderAscendingString,
+  orderDescendingString,
+  orderRandomString,
+  getSelectedTextNodes,
+  supplyData,
+} from '../utils'
 
 import industries from '../turkishData/businessIndustry'
 import occupations from '../turkishData/businessOccupation'
 import titles from '../turkishData/businessTitle'
 import works from '../turkishData/businessWork'
 
-/* 
-    Business Title', 'BusinessTitle')
-    Company Name', 'CompanyName')
-    Industry Title', 'IndustryTitle')
-    Occupation', 'Occupation')
-    Shop Name', 'ShopName')
-*/
-
-export interface Options {
+export interface PluginOptions {
   order: string
 }
 
 export interface NameHandler extends EventHandler {
-  name: 
-  | 'BUSINESS_TITLE'
-  | 'COMPANY_NAME'
-  | 'INDUSTRY_TITLE'
-  | 'OCCUPATION'
-  | 'SHOP_NAME'
-  handler: (options: Options) => void;
+  name:
+    | 'BUSINESS_TITLE'
+    | 'COMPANY_NAME'
+    | 'INDUSTRY_TITLE'
+    | 'OCCUPATION'
+    | 'SHOP_NAME'
+  handler: (options: PluginOptions) => void
 }
 
 export default async function (): Promise<void> {
   setRelaunchButton(figma.currentPage, 'turkishBusiness')
-  const lastOrder = await figma.clientStorage.getAsync('business.lastOrder')
+  const lastOptions = {
+    order: await figma.clientStorage.getAsync('business.order'),
+  }
+
+  function supplyBusinesss(supplierFunction: Function, options: PluginOptions) {
+    let orderFunction: Function = orderRandomString
+    switch (options.order) {
+      case 'ascending':
+        orderFunction = orderAscendingString
+        break
+      case 'descending':
+        orderFunction = orderDescendingString
+        break
+      default:
+        break
+    }
+    const selectedNodes = getSelectedTextNodes()
+    const locations = supplierFunction(selectedNodes.length, options.order)
+    supplyData(selectedNodes, orderFunction(locations))
+
+    figma.clientStorage.setAsync('business.order', options.order)
+  }
+
   on<NameHandler>('BUSINESS_TITLE', options => {
-    supplyBusinesss(supplyCompanyName, options)
+    supplyBusinesss(getCompanyNames, options)
   })
   on<NameHandler>('COMPANY_NAME', options => {
-    supplyBusinesss(supplyCompanyName, options)
+    supplyBusinesss(getCompanyNames, options)
   })
   on<NameHandler>('INDUSTRY_TITLE', options => {
-    supplyBusinesss(supplyIndustryTitle, options)
+    supplyBusinesss(getIndustryTitles, options)
   })
   on<NameHandler>('OCCUPATION', options => {
-    supplyBusinesss(supplyOccupation, options)
+    supplyBusinesss(getOccupations, options)
   })
   on<NameHandler>('SHOP_NAME', options => {
-    supplyBusinesss(supplyShopName, options)
+    supplyBusinesss(getShopNames, options)
   })
   showUI(
     {
       width: 240,
       height: 288,
     },
-    { lastOrder: lastOrder }
+    lastOptions
   )
 }
 
-async function supplyBusinesss(supplierFunction: Function, options: Options) {
-  let orderFunction: Function = orderRandomString
-  switch (options.order) {
-    case 'ascending':
-      orderFunction = orderAscendingString
-      break
-    case 'descending':
-      orderFunction = orderDescendingString
-      break
-    default:
-      break
-  }
-  const selectedNodes = getSelectedTextNodes()
-  const locations = orderFunction(
-    supplierFunction(selectedNodes.length, options.order)
-    )
-  selectedNodes.forEach((textNode, i) => {
-    figma.loadFontAsync(textNode.fontName as FontName).then(() => {
-      textNode.characters = locations[i]
-    })
-  })
-  figma.clientStorage.setAsync('business.lastOrder', options.order)
+export function getIndustryTitles() {
+  return industries
 }
 
-function getCompanies() {
+export function getBusinessTitles() {
+  return works
+}
+
+export function getCompanyNames() {
   return titles.map(() => {
     return (
       titles[Math.floor(Math.random() * titles.length)] +
@@ -93,7 +98,11 @@ function getCompanies() {
   })
 }
 
-function getShops() {
+export function getOccupations() {
+  return occupations
+}
+
+export function getShopNames() {
   return titles.map(() => {
     return (
       titles[Math.floor(Math.random() * titles.length)] +
@@ -101,24 +110,4 @@ function getShops() {
       works[Math.floor(Math.random() * works.length)]
     )
   })
-}
-
-export function supplyIndustryTitle() {
-  return industries
-}
-
-export function supplyBusinessTitle() {
-  return works
-}
-
-export function supplyCompanyName() {
-  return getCompanies()
-}
-
-export function supplyOccupation() {
-  return occupations
-}
-
-export function supplyShopName() {
-  return getShops()
 }
