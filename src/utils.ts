@@ -102,6 +102,14 @@ export function orderRandomTime(data: Array<Date>, options: Object) {
   return shuffle(data.map(date => date.toLocaleTimeString('tr-TR', options)))
 }
 
+export function formatDate(date: Date, options: object) {
+  return date.toLocaleDateString('tr-TR', options)
+}
+
+export function formatTime(date: Date, options: object) {
+  return date.toLocaleTimeString('tr-TR', options)
+}
+
 export function shuffle(array: Array<any>) {
   var currentIndex = array.length,
     temporaryValue,
@@ -152,6 +160,45 @@ export default function copyToClipboardAsync(value: string): Promise<void> {
     return navigator.clipboard.writeText(value);
   }
   return Promise.reject(`Clipboard API is not supported!`);
+}
+
+
+/* 
+{
+  'HhMm': 'HH:mm'
+  'HhMmSs': 'HH:mm:SS'
+  'DdMmYY': 'dd.MM.yy'
+  'DdMmYyyy': 'dd.MM.yyyy'
+  'DdMmmYyyy': 'dd MMM yyyy'
+  'DdMmmmYyyy': 'dd MMMM yyyy'
+  'DdMmmmYyyyDddd': 'dd MMMM yyyy dddd'
+  'DdMmYyHhMm': 'dd.MM.yy HH:mm'
+  'DdMmYyyyHhMm': 'dd.MM.yyyy HH:mm'
+  'DdMmmmYyyyDdddHhMm': 'dd MMMM yyyy dddd HH:mm'
+}
+*/
+
+export const calendarFormats = {
+  DayName: {
+    weekday: 'short',
+  },
+  DayNumber: {
+    day: '2-digit',
+  },
+  MonthName: {
+    month: 'short',
+  },
+  MonthNumber: {
+    month: '2-digit',
+  },
+  DayAndMonthName: {
+    day: '2-digit',
+    month: 'short',
+  },
+  MonthNameAndYear: {
+    month: 'short',
+    year: '2-digit',
+  }
 }
 
 export const dateTimeFormats = {

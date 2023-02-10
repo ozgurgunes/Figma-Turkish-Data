@@ -12,12 +12,18 @@ import {
 import { h, JSX } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
-import { DateHandler, PluginOptions } from './main'
+import { DateHandler, PluginOptions, DateFormat } from './main'
+import { dateTimeFormats, formatDate, formatTime } from '../utils'
+import DatePicker from 'react-datepicker'
+import '!react-datepicker/dist/react-datepicker.css'
+import '!../styles.css'
 
 function Plugin(props: PluginOptions) {
   const [orderValue, setOrderValue] = useState(props.order || 'random')
   const [rangeValue, setRangeValue] = useState(props.range || 'year')
   const [startValue, setStartValue] = useState(new Date().toLocaleString())
+  const [dateValue, setDateValue] = useState(new Date())
+
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)
@@ -26,27 +32,34 @@ function Plugin(props: PluginOptions) {
     const newValue = event.currentTarget.value
     setRangeValue(newValue)
   }
-  function handleStart(event: JSX.TargetedEvent<HTMLInputElement>) {
+  function handleStartChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setStartValue(newValue)
   }
+  function handleDateChange(date: Date) {
+    setDateValue(date)
+    setStartValue(date.toString())
+  }
+
   const orderOptions: Array<SegmentedControlOption> = [
     { value: 'random', children: 'Random' },
     { value: 'ascending', children: '0 -> 9' },
     { value: 'descending', children: '9 -> 0' },
   ]
   const rangeOptions: Array<SegmentedControlOption> = [
-    { value: 'year', children: 'year' },
-    { value: 'month', children: 'month' },
-    { value: 'hour', children: 'hour' },
-    { value: 'day', children: 'day' },
+    { value: 'year', children: 'Year' },
+    { value: 'month', children: 'Month' },
+    { value: 'day', children: 'Day' },
+    { value: 'hour', children: 'Hour' },
   ]
   const options = {
     order: orderValue,
     range: rangeValue,
     start: startValue,
   }
-
+  function getFormat(format: DateFormat) {
+    return dateTimeFormats[format]
+  }
   const handleHhMmButtonClick = useCallback(() => {
     emit<DateHandler>('HHMM', options)
   }, [options])
@@ -80,11 +93,9 @@ function Plugin(props: PluginOptions) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text><Bold>Start</Bold></Text>
-      <VerticalSpace space="extraSmall" />
-      <Textbox onInput={handleStart} value={startValue} />
-      <VerticalSpace space="medium" />
-      <Text><Bold>Range</Bold></Text>
+      <Text>
+        <Bold>Range</Bold>
+      </Text>
       <VerticalSpace space="extraSmall" />
       <SegmentedControl
         onChange={handleRangeChange}
@@ -92,52 +103,70 @@ function Plugin(props: PluginOptions) {
         value={rangeValue}
       />
       <VerticalSpace space="medium" />
-      <Text><Bold>Order</Bold></Text>
+      <Text>
+        <Bold>Order</Bold>
+      </Text>
       <VerticalSpace space="extraSmall" />
       <SegmentedControl
         onChange={handleOrderChange}
         options={orderOptions}
         value={orderValue}
       />
+      <VerticalSpace space="medium" />
+      <Text>
+        <Bold>Start Date</Bold>
+      </Text>
+      <VerticalSpace space="extraSmall" />
+      <DatePicker
+        selected={dateValue}
+        onChange={(date: Date) => handleDateChange(date)}
+        //showTimeSelect
+        inline
+        showTimeInput
+        showMonthDropdown
+        showYearDropdown
+        dropdownMode="select"
+        calendarStartDay={1}
+      />
       <VerticalSpace space="large" />
       <Button secondary fullWidth onClick={handleHhMmButtonClick}>
-        HH:mm
+        {formatTime(dateValue, getFormat('HhMm'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleHhMmSsButtonClick}>
-        HH:mm:SS
+        {formatTime(dateValue, getFormat('HhMmSs'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDdMmYYButtonClick}>
-        dd.MM.yy
+        {formatDate(dateValue, getFormat('DdMmYY'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDdMmYyyyButtonClick}>
-        dd.MM.yyyy
+        {formatDate(dateValue, getFormat('DdMmYyyy'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDdMmmYyyyButtonClick}>
-        dd MMM yyyy
+        {formatDate(dateValue, getFormat('DdMmmYyyy'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDdMmmmYyyyButtonClick}>
-        dd MMMM yyyy
+        {formatDate(dateValue, getFormat('DdMmmmYyyy'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDdMmmmYyyyDdddButtonClick}>
-        dd MMMM yyyy dddd
+        {formatDate(dateValue, getFormat('DdMmmmYyyyDddd'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDdMmYyHhMmButtonClick}>
-        dd.MM.yy HH:mm
+        {formatDate(dateValue, getFormat('DdMmYyHhMm'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDdMmYyyyHhMmButtonClick}>
-        dd.MM.yyyy HH:mm
+        {formatDate(dateValue, getFormat('DdMmYyyyHhMm'))}
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleDdMmmmYyyyDdddHhMmButtonClick}>
-        dd MMMM yyyy dddd HH:mm{' '}
+        {formatDate(dateValue, getFormat('DdMmmmYyyyDdddHhMm'))}
       </Button>
       <VerticalSpace space="medium" />
     </Container>

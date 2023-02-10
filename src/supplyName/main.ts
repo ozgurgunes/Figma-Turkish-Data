@@ -33,11 +33,6 @@ export default async function (): Promise<void> {
     gender: await figma.clientStorage.getAsync('name.gender'),
   }
 
-  function saveOptions(options: PluginOptions) {
-    figma.clientStorage.setAsync('name.order', options.order)
-    figma.clientStorage.setAsync('name.gender', options.gender)
-  }
-
   function supplyNames(supplierFunction: Function, options: PluginOptions) {
     let orderFunction: Function = orderRandomString
     switch (options.order) {
@@ -53,7 +48,9 @@ export default async function (): Promise<void> {
     const selectedNodes = getSelectedTextNodes()
     const names = supplierFunction(selectedNodes.length, options.gender)
     supplyData(selectedNodes, orderFunction(names))
-    saveOptions(options)
+
+    figma.clientStorage.setAsync('name.order', options.order)
+    figma.clientStorage.setAsync('name.gender', options.gender)
   }
 
   on<NameHandler>('FULL_NAME', function (options) {
@@ -80,45 +77,40 @@ export default async function (): Promise<void> {
   )
 }
 
-function getFullNames(length: number, gender?: string) {
-  const getNames = (namesArray: string[], length: number) => {
-    let names: string[] = []
-    for (let i = 0; i < length; i++) {
-      names.push(namesArray[Math.floor(Math.random() * namesArray.length)])
-    }
-    return names.map(n => {
-      return n + ' ' + lastNames[Math.floor(Math.random() * lastNames.length)]
-    })
-  }
+function supplyFirstNames(gender: string) {
+  let names = []
   switch (gender) {
     case 'female':
-      return getNames(femaleNames, length)
+      names = femaleNames
     case 'male':
-      return getNames(maleNames, length)
+      names = maleNames
     default:
-      return getNames(femaleNames.concat(maleNames), length)
+      names = femaleNames.concat(maleNames)
   }
+  return names
 }
 
-function getFirstNames(length: number, gender?: string) {
-  const getNames = (namesArray: string[], length: number) => {
-    let names: string[] = []
-    for (let i = 0; i < length; i++) {
-      names.push(namesArray[Math.floor(Math.random() * namesArray.length)])
-    }
-    return names
+function getFullNames(length: number, gender: string) {
+  let names: string[] = []
+  let firstNames = supplyFirstNames(gender)
+  for (let i = 0; i < length; i++) {
+    names.push(firstNames[Math.floor(Math.random() * firstNames.length)])
   }
-  switch (gender) {
-    case 'female':
-      return getNames(femaleNames, length)
-    case 'male':
-      return getNames(maleNames, length)
-    default:
-      return getNames(femaleNames.concat(maleNames), length)
-  }
+  return names.map(n => {
+    return n + ' ' + lastNames[Math.floor(Math.random() * lastNames.length)]
+  })
 }
 
-function getLastNames(length: number, gender?: string) {
+function getFirstNames(length: number, gender: string) {
+  let names: string[] = []
+  let firstNames = supplyFirstNames(gender)
+  for (let i = 0; i < length; i++) {
+    names.push(firstNames[Math.floor(Math.random() * firstNames.length)])
+  }
+  return names
+}
+
+function getLastNames(length: number, gender: string) {
   let names: string[] = []
   for (let i = 0; i < length; i++) {
     names.push(lastNames[Math.floor(Math.random() * lastNames.length)])
@@ -126,47 +118,26 @@ function getLastNames(length: number, gender?: string) {
   return names
 }
 
-function getFirstLs(length: number, gender?: string) {
-  const getNames = (namesArray: string[], length: number) => {
-    let names: string[] = []
-    for (let i = 0; i < length; i++) {
-      names.push(namesArray[Math.floor(Math.random() * namesArray.length)])
-    }
-    return names.map(n => {
-      return (
-        n +
-        ' ' +
-        lastNames[Math.floor(Math.random() * lastNames.length)][0] +
-        '.'
-      )
-    })
+function getFirstLs(length: number, gender: string) {
+  let names: string[] = []
+  let firstNames = supplyFirstNames(gender)
+  for (let i = 0; i < length; i++) {
+    names.push(firstNames[Math.floor(Math.random() * firstNames.length)])
   }
-  switch (gender) {
-    case 'female':
-      return getNames(femaleNames, length)
-    case 'male':
-      return getNames(maleNames, length)
-    default:
-      return getNames(femaleNames.concat(maleNames), length)
-  }
+  return names.map(n => {
+    return (
+      n + ' ' + lastNames[Math.floor(Math.random() * lastNames.length)][0] + '.'
+    )
+  })
 }
 
-function getLastFirsts(length: number, gender?: string) {
-  const getNames = (namesArray: string[], length: number) => {
-    let names: string[] = []
-    for (let i = 0; i < length; i++) {
-      names.push(namesArray[Math.floor(Math.random() * namesArray.length)])
-    }
-    return names.map(n => {
-      return n + ', ' + lastNames[Math.floor(Math.random() * lastNames.length)]
-    })
+function getLastFirsts(length: number, gender: string) {
+  let names: string[] = []
+  let firstNames = supplyFirstNames(gender)
+  for (let i = 0; i < length; i++) {
+    names.push(firstNames[Math.floor(Math.random() * firstNames.length)])
   }
-  switch (gender) {
-    case 'female':
-      return getNames(femaleNames, length)
-    case 'male':
-      return getNames(maleNames, length)
-    default:
-      return getNames(femaleNames.concat(maleNames), length)
-  }
+  return names.map(n => {
+    return n + ', ' + lastNames[Math.floor(Math.random() * lastNames.length)]
+  })
 }

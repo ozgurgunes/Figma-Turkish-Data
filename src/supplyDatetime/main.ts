@@ -8,6 +8,7 @@ import {
   orderDescendingDateTime,
   orderDescendingTime,
   supplyData,
+  formatDate,
 } from '../utils'
 
 import {
@@ -17,7 +18,7 @@ import {
   EventHandler,
 } from '@create-figma-plugin/utilities'
 
-type DateFormat =
+export type DateFormat =
   | 'HhMm'
   | 'HhMmSs'
   | 'DdMmYY'
@@ -140,7 +141,7 @@ export default async function (): Promise<void> {
   showUI(
     {
       width: 240,
-      height: 600,
+      height: 520,
     },
     lastOptions
   )
@@ -149,7 +150,7 @@ export default async function (): Promise<void> {
 function getDateTimeArray(arrayLength: number, options: PluginOptions): Date[] {
   let start = new Date(Date.parse(options.start))
   let end = start
-  let modifier = options.order == 'ascending' ? 1 : -1
+  let modifier = -1 //options.order == 'ascending' ? 1 : -1
   //start = Date.parse(optionStart)
   //let end = new Date(new Date().setFullYear(start.getFullYear() - 2))
   switch (options.range) {
@@ -182,7 +183,7 @@ function getDateTimeArray(arrayLength: number, options: PluginOptions): Date[] {
 function getTimeArray(arrayLength: number, options: PluginOptions) {
   let start = new Date(Date.parse(options.start))
   let end = start
-  let modifier = options.order == 'ascending' ? 1 : -1
+  let modifier = -1 //options.order == 'ascending' ? 1 : -1
   //start = Date.parse(optionStart)
   //let end = new Date(new Date().setFullYear(start.getFullYear() - 2))
   switch (options.range) {

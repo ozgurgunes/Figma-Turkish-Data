@@ -13,17 +13,6 @@
   "bugs": {
     "url": "https://github.com/ozgurgunes/Figma-Turkish-Data/issues"
   },
-  "dependencies": {
-    "@create-figma-plugin/ui": "^2.2.0",
-    "@create-figma-plugin/utilities": "^2.2.0",
-    "preact": "^10.12.0"
-  },
-  "devDependencies": {
-    "@create-figma-plugin/build": "^2.2.0",
-    "@create-figma-plugin/tsconfig": "^2.2.0",
-    "@figma/plugin-typings": "^1.58.0",
-    "typescript": "^4.9.5"
-  },
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
     "watch": "build-figma-plugin --typecheck --watch"
@@ -64,6 +53,16 @@
         "name": "Phone",
         "main": "src/supplyPhone/main.ts",
         "ui": "src/supplyPhone/ui.tsx"
+      },
+      {
+        "name": "Email",
+        "main": "src/supplyEmail/main.ts",
+        "ui": "src/supplyEmail/ui.tsx"
+      },
+      {
+        "name": "Calendar",
+        "main": "src/supplyCalendar/main.ts",
+        "ui": "src/supplyCalendar/ui.tsx"
       }
     ],
     "relaunchButtons": {
@@ -96,7 +95,33 @@
         "name": "Turkish Phone",
         "main": "src/supplyPhone/main.ts",
         "ui": "src/supplyPhone/ui.tsx"
+      },
+      "turkishEmail": {
+        "name": "Turkish Email",
+        "main": "src/supplyEmail/main.ts",
+        "ui": "src/supplyEmail/ui.tsx"
+      },
+      "turkishCalendar": {
+        "name": "Turkish Calendar",
+        "main": "src/supplyCalendar/main.ts",
+        "ui": "src/supplyCalendar/ui.tsx"
       }
     }
+  },
+  "dependencies": {
+    "@create-figma-plugin/ui": "^2.2.0",
+    "@create-figma-plugin/utilities": "^2.2.0",
+    "latinize": "^0.5.0",
+    "preact": "^10.12.0",
+    "react-datepicker": "^4.10.0"
+  },
+  "devDependencies": {
+    "@create-figma-plugin/build": "^2.2.0",
+    "@create-figma-plugin/tsconfig": "^2.2.0",
+    "@figma/plugin-typings": "^1.58.0",
+    "@types/latinize": "^0.2.15",
+    "@types/react": "^18.0.27",
+    "@types/react-datepicker": "^4.8.0",
+    "typescript": "^4.9.5"
   }
 }
