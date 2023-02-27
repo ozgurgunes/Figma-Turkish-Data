@@ -25,10 +25,6 @@ function Plugin(props: PluginOptions) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)
   }
-  function handleStartChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setStartValue(newValue)
-  }
   function handleDateChange(date: Date) {
     setDateValue(date)
     setStartValue(date.toString())

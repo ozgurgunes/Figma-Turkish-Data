@@ -7,15 +7,19 @@ import {
   Button,
   SegmentedControl,
   SegmentedControlOption,
+  DropdownOption,
+  Dropdown,
 } from '@create-figma-plugin/ui'
+import cities from '../turkishData/locationCity'
 import { h, JSX } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
 import { useCallback, useState } from 'preact/hooks'
 import { NameHandler, PluginOptions } from './main'
 
 function Plugin(props: PluginOptions) {
-  const [pickValue, setPickValue] = useState(props.pick || 'random')
+  const [pickValue, setPickValue] = useState(props.pick || 'randomized')
   const [orderValue, setOrderValue] = useState(props.order || 'random')
+  const [cityValue, setCityValue] = useState(props.city || '')
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)
@@ -23,6 +27,10 @@ function Plugin(props: PluginOptions) {
   function handlePickChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setPickValue(newValue)
+  }
+  function handleCityChange(event: JSX.TargetedEvent<HTMLInputElement>) {
+    const newValue = event.currentTarget.value
+    setCityValue(newValue)
   }
   const pickOptions: Array<SegmentedControlOption> = [
     { value: 'randomized', children: 'Randomized' },
@@ -33,12 +41,22 @@ function Plugin(props: PluginOptions) {
     { value: 'ascending', children: 'A -> Z' },
     { value: 'descending', children: 'Z -> A' },
   ]
-  const options = {
+  let cityOptions: Array<DropdownOption> = [
+    { value: '', text: 'All Cities' },
+    { separator: true },
+  ]
+  cities.forEach(city => cityOptions.push({ value: city.name }))
+
+  const options: PluginOptions = {
     pick: pickValue,
     order: orderValue,
+    city: cityValue,
   }
   const handleAddressButtonClick = useCallback(() => {
     emit<NameHandler>('ADDRESS', options)
+  }, [options])
+  const handleCompleteAddressButtonClick = useCallback(() => {
+    emit<NameHandler>('COMPLETE_ADDRESS', options)
   }, [options])
   const handleCityButtonClick = useCallback(() => {
     emit<NameHandler>('CITY', options)
@@ -55,12 +73,6 @@ function Plugin(props: PluginOptions) {
   const handleCityCommaDistrictButtonClick = useCallback(() => {
     emit<NameHandler>('CITY_COMMA_DISTRICT', options)
   }, [options])
-  const handleDistrictsOfAnkaraButtonClick = useCallback(() => {
-    emit<NameHandler>('DISTRICTS_OF_ANKARA', options)
-  }, [options])
-  const handleDistrictsOfIstanbulButtonClick = useCallback(() => {
-    emit<NameHandler>('DISTRICTS_OF_ISTANBUL', options)
-  }, [options])
   const handleCityToCityButtonClick = useCallback(() => {
     emit<NameHandler>('CITY_TO_CITY', options)
   }, [options])
@@ -70,7 +82,9 @@ function Plugin(props: PluginOptions) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text><Bold>Pick</Bold></Text>
+      <Text>
+        <Bold>Pick</Bold>
+      </Text>
       <VerticalSpace space="small" />
       <SegmentedControl
         onChange={handlePickChange}
@@ -78,16 +92,33 @@ function Plugin(props: PluginOptions) {
         value={pickValue}
       />
       <VerticalSpace space="medium" />
-      <Text><Bold>Order</Bold></Text>
+      <Text>
+        <Bold>Order</Bold>
+      </Text>
       <VerticalSpace space="small" />
       <SegmentedControl
         onChange={handleOrderChange}
         options={orderOptions}
         value={orderValue}
       />
+      <VerticalSpace space="medium" />
+      <Text>
+        <Bold>City</Bold>
+      </Text>
+      <VerticalSpace space="small" />
+      <Dropdown
+        onChange={handleCityChange}
+        options={cityOptions}
+        value={cityValue}
+        placeholder="All cities"
+      />
       <VerticalSpace space="large" />
       <Button secondary fullWidth onClick={handleAddressButtonClick}>
         Address
+      </Button>
+      <VerticalSpace space="extraSmall" />
+      <Button secondary fullWidth onClick={handleCompleteAddressButtonClick}>
+        Complete Address
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleCityButtonClick}>
@@ -108,18 +139,6 @@ function Plugin(props: PluginOptions) {
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleCityCommaDistrictButtonClick}>
         City, District
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDistrictsOfAnkaraButtonClick}>
-        Districts of Ankara
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button
-        secondary
-        fullWidth
-        onClick={handleDistrictsOfIstanbulButtonClick}
-      >
-        Districts of Istanbul
       </Button>
       <VerticalSpace space="extraSmall" />
       <Button secondary fullWidth onClick={handleCityToCityButtonClick}>

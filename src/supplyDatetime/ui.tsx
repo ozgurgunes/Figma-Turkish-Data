@@ -5,9 +5,10 @@ import {
   Bold,
   VerticalSpace,
   Button,
+  Columns,
+  Divider,
   SegmentedControl,
   SegmentedControlOption,
-  Textbox,
 } from '@create-figma-plugin/ui'
 import { h, JSX } from 'preact'
 import { emit } from '@create-figma-plugin/utilities'
@@ -20,25 +21,22 @@ import '!../styles.css'
 
 function Plugin(props: PluginOptions) {
   const [orderValue, setOrderValue] = useState(props.order || 'random')
-  const [rangeValue, setRangeValue] = useState(props.range || 'year')
-  const [startValue, setStartValue] = useState(new Date().toLocaleString())
-  const [dateValue, setDateValue] = useState(new Date())
+  const [endValue, setEndValue] = useState(new Date(props.end).toLocaleString())
+  const [startValue, setStartValue] = useState(new Date(props.start).toLocaleString())
+  const [startDateValue, setStartDateValue] = useState(new Date(props.start))
+  const [endDateValue, setEndDateValue] = useState(new Date(props.end))
 
   function handleOrderChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value
     setOrderValue(newValue)
   }
-  function handleRangeChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setRangeValue(newValue)
-  }
-  function handleStartChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value
-    setStartValue(newValue)
-  }
-  function handleDateChange(date: Date) {
-    setDateValue(date)
+  function handleStartDateChange(date: Date) {
+    setStartDateValue(date)
     setStartValue(date.toString())
+  }
+  function handleEndDateChange(date: Date) {
+    setEndDateValue(date)
+    setEndValue(date.toString())
   }
 
   const orderOptions: Array<SegmentedControlOption> = [
@@ -46,20 +44,17 @@ function Plugin(props: PluginOptions) {
     { value: 'ascending', children: '0 -> 9' },
     { value: 'descending', children: '9 -> 0' },
   ]
-  const rangeOptions: Array<SegmentedControlOption> = [
-    { value: 'year', children: 'Year' },
-    { value: 'month', children: 'Month' },
-    { value: 'day', children: 'Day' },
-    { value: 'hour', children: 'Hour' },
-  ]
   const options = {
     order: orderValue,
-    range: rangeValue,
     start: startValue,
+    end: endValue,
   }
   function getFormat(format: DateFormat) {
     return dateTimeFormats[format]
   }
+  const handleHhMmOsButtonClick = useCallback(() => {
+    emit<DateHandler>('HHMMOS', options)
+  }, [options])
   const handleHhMmButtonClick = useCallback(() => {
     emit<DateHandler>('HHMM', options)
   }, [options])
@@ -93,81 +88,100 @@ function Plugin(props: PluginOptions) {
   return (
     <Container space="medium">
       <VerticalSpace space="medium" />
-      <Text>
-        <Bold>Range</Bold>
-      </Text>
-      <VerticalSpace space="extraSmall" />
-      <SegmentedControl
-        onChange={handleRangeChange}
-        options={rangeOptions}
-        value={rangeValue}
-      />
-      <VerticalSpace space="medium" />
-      <Text>
-        <Bold>Order</Bold>
-      </Text>
-      <VerticalSpace space="extraSmall" />
-      <SegmentedControl
-        onChange={handleOrderChange}
-        options={orderOptions}
-        value={orderValue}
-      />
-      <VerticalSpace space="medium" />
-      <Text>
-        <Bold>Start Date</Bold>
-      </Text>
-      <VerticalSpace space="extraSmall" />
-      <DatePicker
-        selected={dateValue}
-        onChange={(date: Date) => handleDateChange(date)}
-        //showTimeSelect
-        inline
-        showTimeInput
-        showMonthDropdown
-        showYearDropdown
-        dropdownMode="select"
-        calendarStartDay={1}
-      />
-      <VerticalSpace space="large" />
-      <Button secondary fullWidth onClick={handleHhMmButtonClick}>
-        {formatTime(dateValue, getFormat('HhMm'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleHhMmSsButtonClick}>
-        {formatTime(dateValue, getFormat('HhMmSs'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDdMmYYButtonClick}>
-        {formatDate(dateValue, getFormat('DdMmYY'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDdMmYyyyButtonClick}>
-        {formatDate(dateValue, getFormat('DdMmYyyy'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDdMmmYyyyButtonClick}>
-        {formatDate(dateValue, getFormat('DdMmmYyyy'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDdMmmmYyyyButtonClick}>
-        {formatDate(dateValue, getFormat('DdMmmmYyyy'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDdMmmmYyyyDdddButtonClick}>
-        {formatDate(dateValue, getFormat('DdMmmmYyyyDddd'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDdMmYyHhMmButtonClick}>
-        {formatDate(dateValue, getFormat('DdMmYyHhMm'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDdMmYyyyHhMmButtonClick}>
-        {formatDate(dateValue, getFormat('DdMmYyyyHhMm'))}
-      </Button>
-      <VerticalSpace space="extraSmall" />
-      <Button secondary fullWidth onClick={handleDdMmmmYyyyDdddHhMmButtonClick}>
-        {formatDate(dateValue, getFormat('DdMmmmYyyyDdddHhMm'))}
-      </Button>
+      <Columns space="medium">
+        <div style="width: 200px">
+          <Text>
+            <Bold>Start Date</Bold>
+          </Text>
+          <VerticalSpace space="small" />
+          <DatePicker
+            selected={startDateValue}
+            onChange={(date: Date) => handleStartDateChange(date)}
+            //showTimeSelect
+            inline
+            showTimeInput
+            showMonthDropdown
+            showYearDropdown
+            dropdownMode="select"
+            calendarStartDay={1}
+          />
+          <VerticalSpace space="medium" />
+          <Text>
+            <Bold>End Date</Bold>
+          </Text>
+          <VerticalSpace space="small" />
+          <DatePicker
+            selected={endDateValue}
+            onChange={(date: Date) => handleEndDateChange(date)}
+            //showTimeSelect
+            inline
+            showTimeInput
+            showMonthDropdown
+            showYearDropdown
+            dropdownMode="select"
+            calendarStartDay={1}
+          />
+        </div>
+        <div style="width: 216px">
+          <Text>
+            <Bold>Order</Bold>
+          </Text>
+          <VerticalSpace space="extraSmall" />
+          <SegmentedControl
+            onChange={handleOrderChange}
+            options={orderOptions}
+            value={orderValue}
+          />
+          <VerticalSpace space="large" />
+          <Button secondary fullWidth onClick={handleHhMmOsButtonClick}>
+            {formatTime(startDateValue, getFormat('HhMmOs'))}
+          </Button>
+          <VerticalSpace space="extraSmall" />
+          <Button secondary fullWidth onClick={handleHhMmButtonClick}>
+            {formatTime(startDateValue, getFormat('HhMm'))}
+          </Button>
+          <VerticalSpace space="extraSmall" />
+          <Button secondary fullWidth onClick={handleHhMmSsButtonClick}>
+            {formatTime(startDateValue, getFormat('HhMmSs'))}
+          </Button>
+          <VerticalSpace space="large" />
+          <Button secondary fullWidth onClick={handleDdMmYYButtonClick}>
+            {formatDate(startDateValue, getFormat('DdMmYY'))}
+          </Button>
+          <VerticalSpace space="extraSmall" />
+          <Button secondary fullWidth onClick={handleDdMmYyyyButtonClick}>
+            {formatDate(startDateValue, getFormat('DdMmYyyy'))}
+          </Button>
+          <VerticalSpace space="extraSmall" />
+          <Button secondary fullWidth onClick={handleDdMmmYyyyButtonClick}>
+            {formatDate(startDateValue, getFormat('DdMmmYyyy'))}
+          </Button>
+          <VerticalSpace space="extraSmall" />
+          <Button secondary fullWidth onClick={handleDdMmmmYyyyButtonClick}>
+            {formatDate(startDateValue, getFormat('DdMmmmYyyy'))}
+          </Button>
+          <VerticalSpace space="extraSmall" />
+          <Button secondary fullWidth onClick={handleDdMmmmYyyyDdddButtonClick}>
+            {formatDate(startDateValue, getFormat('DdMmmmYyyyDddd'))}
+          </Button>
+          <VerticalSpace space="large" />
+          <Button secondary fullWidth onClick={handleDdMmYyHhMmButtonClick}>
+            {formatDate(startDateValue, getFormat('DdMmYyHhMm'))}
+          </Button>
+          <VerticalSpace space="extraSmall" />
+          <Button secondary fullWidth onClick={handleDdMmYyyyHhMmButtonClick}>
+            {formatDate(startDateValue, getFormat('DdMmYyyyHhMm'))}
+          </Button>
+          <VerticalSpace space="extraSmall" />
+          <Button
+            secondary
+            fullWidth
+            onClick={handleDdMmmmYyyyDdddHhMmButtonClick}
+          >
+            {formatDate(startDateValue, getFormat('DdMmmmYyyyDdddHhMm'))}
+          </Button>
+        </div>
+      </Columns>
       <VerticalSpace space="medium" />
     </Container>
   )

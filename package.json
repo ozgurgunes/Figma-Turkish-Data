@@ -1,6 +1,6 @@
 {
   "name": "figma-turkish-data",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Turkish data supplier plugin, provides names, locations, business titles and dates in various formats.",
   "author": "Ozgur Gunes",
   "authorEmail": "o.gunes@gmail.com",
@@ -63,6 +63,11 @@
         "name": "Calendar",
         "main": "src/supplyCalendar/main.ts",
         "ui": "src/supplyCalendar/ui.tsx"
+      },
+      {
+        "name": "Duration",
+        "main": "src/supplyDuration/main.ts",
+        "ui": "src/supplyDuration/ui.tsx"
       }
     ],
     "relaunchButtons": {
@@ -105,12 +110,18 @@
         "name": "Turkish Calendar",
         "main": "src/supplyCalendar/main.ts",
         "ui": "src/supplyCalendar/ui.tsx"
+      },
+      "turkishDuration": {
+        "name": "Turkish Duration",
+        "main": "src/supplyDuration/main.ts",
+        "ui": "src/supplyDuration/ui.tsx"
       }
     }
   },
   "dependencies": {
     "@create-figma-plugin/ui": "^2.2.0",
     "@create-figma-plugin/utilities": "^2.2.0",
+    "humanize-duration": "^3.28.0",
     "latinize": "^0.5.0",
     "preact": "^10.12.0",
     "react-datepicker": "^4.10.0"
@@ -119,6 +130,7 @@
     "@create-figma-plugin/build": "^2.2.0",
     "@create-figma-plugin/tsconfig": "^2.2.0",
     "@figma/plugin-typings": "^1.58.0",
+    "@types/humanize-duration": "^3.27.1",
     "@types/latinize": "^0.2.15",
     "@types/react": "^18.0.27",
     "@types/react-datepicker": "^4.8.0",

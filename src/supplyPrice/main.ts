@@ -122,8 +122,10 @@ function getPrices(length: number, options: PluginOptions) {
     switch (options.decimal) {
       case 'random':
         price = price + Math.floor(Math.random() * (100 - 10) + 10) / 100
+        break
       case 'max':
         price = price + 0.99
+        break
       case 'min':
         fractions = { minimumFractionDigits: 2 }
       default:
@@ -161,7 +163,7 @@ function getTotal() {
   const selectedNodes = getSelectedTextNodes()
   let arr = selectedNodes.map(node =>
     parseFloat(
-      node.characters.replace(/\./g, '').replace(/\,/g, '.').replace(/\₺/g, '')
+      node.characters.replace(/₺/g, '').replace(/\./g, '').replace(/,/g, '.')
     )
   )
   return (arr.length ? arr.reduce((sum, i) => sum + i) : 0).toLocaleString(

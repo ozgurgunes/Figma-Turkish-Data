@@ -1,7 +1,8 @@
 import {
   traverseNode,
-  sortNodesByCanonicalOrder,
 } from '@create-figma-plugin/utilities'
+import humanizeDuration from 'humanize-duration'
+
 
 export function getSelectedTextNodes(): Array<TextNode> {
   const nodes = figma.currentPage.selection
@@ -15,6 +16,34 @@ export function getSelectedTextNodes(): Array<TextNode> {
     })
   }
   return result
+}
+
+export const turkishDuration = {
+  basic: humanizeDuration.humanizer({
+    language: 'tr',
+    units: ['y', 'mo', 'd', 'h', 'm'],
+    round: true,
+    largest: 2,
+  }),
+  short: humanizeDuration.humanizer({
+    language: 'turkish',
+    units: ['y', 'mo', 'd', 'h', 'm'],
+    round: true,
+    largest: 2,
+    delimiter: " ",
+    languages: {
+      turkish: {
+        y: () => 'yıl',
+        mo: () => 'ay',
+        w: () => 'hafta',
+        d: () => 'gün',
+        h: () => 'sa.',
+        m: () => 'dk.',
+        s: () => 'sn.',
+        ms: () => 'ms',
+      },
+    },
+  })
 }
 
 // export async function supplyData(data: Array<string>) {
@@ -39,7 +68,7 @@ export function getSelectedTextNodes(): Array<TextNode> {
 export async function supplyData(selectedNodes: Array<any>, data: Array<any>) {
   selectedNodes.forEach((textNode, i) => {
     figma.loadFontAsync(textNode.fontName as FontName).then(() => {
-      textNode.characters = data[i]
+      textNode.characters = String(data[i])
     })
   })
 }
@@ -71,35 +100,17 @@ export function orderRandomNumber(data: Array<number>) {
 }
 
 export function orderAscendingdDateTime(data: Array<Date>, options: Object) {
-  return data
-    .sort((a, b) => (a > b ? 1 : -1))
-    .map(date => date.toLocaleDateString('tr-TR', options))
+  return data.sort((a, b) => (a > b ? 1 : -1))
+  //.map(date => date.toLocaleDateString('tr-TR', options))
 }
 
 export function orderDescendingDateTime(data: Array<Date>, options: Object) {
-  return data
-    .sort((a, b) => (a < b ? 1 : -1))
-    .map(date => date.toLocaleDateString('tr-TR', options))
+  return data.sort((a, b) => (a < b ? 1 : -1))
+  //.map(date => date.toLocaleDateString('tr-TR', options))
 }
 
 export function orderRandomDateTime(data: Array<Date>, options: Object) {
-  return shuffle(data.map(date => date.toLocaleDateString('tr-TR', options)))
-}
-
-export function orderAscendingTime(data: Array<Date>, options: Object) {
-  return data
-    .sort((a, b) => (a > b ? 1 : -1))
-    .map(date => date.toLocaleTimeString('tr-TR', options))
-}
-
-export function orderDescendingTime(data: Array<Date>, options: Object) {
-  return data
-    .sort((a, b) => (a < b ? 1 : -1))
-    .map(date => date.toLocaleTimeString('tr-TR', options))
-}
-
-export function orderRandomTime(data: Array<Date>, options: Object) {
-  return shuffle(data.map(date => date.toLocaleTimeString('tr-TR', options)))
+  return shuffle(data)
 }
 
 export function formatDate(date: Date, options: object) {
@@ -135,33 +146,32 @@ export function copyToClipboard(value: string) {
     // @ts-ignore
     if (window.copy) {
       // @ts-ignore
-      window.copy(value);
+      window.copy(value)
     } else {
-      const area = document.createElement('textarea');
-      document.body.appendChild(area);
-      area.value = value;
-      area.focus();
-      area.select();
-      const result = document.execCommand('copy');
-      document.body.removeChild(area);
+      const area = document.createElement('textarea')
+      document.body.appendChild(area)
+      area.value = value
+      area.focus()
+      area.select()
+      const result = document.execCommand('copy')
+      document.body.removeChild(area)
       if (!result) {
-        throw new Error();
+        throw new Error()
       }
     }
   } catch (e) {
-    console.error(`Unable to copy the value: ${value}`);
-    return false;
+    console.error(`Unable to copy the value: ${value}`)
+    return false
   }
-  return true;
+  return true
 }
 
 export default function copyToClipboardAsync(value: string): Promise<void> {
   if (navigator.clipboard) {
-    return navigator.clipboard.writeText(value);
+    return navigator.clipboard.writeText(value)
   }
-  return Promise.reject(`Clipboard API is not supported!`);
+  return Promise.reject(`Clipboard API is not supported!`)
 }
-
 
 /* 
 {
@@ -198,10 +208,27 @@ export const calendarFormats = {
   MonthNameAndYear: {
     month: 'short',
     year: '2-digit',
-  }
+  },
 }
 
 export const dateTimeFormats = {
+  /* 
+  options: {
+    weekday: 'long', // long, short, narrow
+    year: 'numeric', // numeric, 2-digit
+    month: 'long', // numeric, 2-digit, long, short, narrow
+    day: 'numeric', // numeric, 2-digit
+    hour: 'numeric', // numeric, 2-digit
+    minute: 'numeric', // numeric, 2-digit
+    second: 'numeric', // numeric, 2-digit
+    hour12: false,
+  },
+ */
+  HhMmOs: {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  },
   HhMm: {
     hour: '2-digit',
     minute: '2-digit',

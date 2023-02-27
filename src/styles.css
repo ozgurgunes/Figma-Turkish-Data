@@ -31,7 +31,6 @@
   margin-top: 0;
   color: var(--figma-color-text);
   font-weight: bold;
-  font-size: var(--font-size-12);
 }
 
 .react-datepicker__month-container {
@@ -40,6 +39,11 @@
   width: 100%;
   font-family: var(--font-family);
   font-size: var(--font-size-11);
+}
+
+.react-datepicker__year-dropdown-container, 
+.react-datepicker__month-dropdown-container {
+  margin: 0 8px;
 }
 
 .react-datepicker-time__input {
@@ -55,7 +59,7 @@
   font-size: var(--font-size-11);
   color: var(--figma-color-text);
 }
-.react-datepicker__month-select {
+.react-datepicker__month-select, .react-datepicker__year-select {
   font-family: var(--font-family);
   font-size: var(--font-size-12);
   color: var(--figma-color-text);

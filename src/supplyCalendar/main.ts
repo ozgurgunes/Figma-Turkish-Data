@@ -1,13 +1,11 @@
 import {
-  orderAscendingTime,
-  orderAscendingdDateTime,
-  orderRandomDateTime,
-  orderRandomTime,
   getSelectedTextNodes,
-  calendarFormats,
+  orderAscendingdDateTime,
   orderDescendingDateTime,
-  orderDescendingTime,
+  orderRandomDateTime,
+  calendarFormats,
   supplyData,
+  formatDate,
 } from '../utils'
 
 import {
@@ -69,7 +67,10 @@ export default async function (): Promise<void> {
     
     const selectedNodes = getSelectedTextNodes()
     const dates = supplierFunction(selectedNodes.length, options)
-    supplyData(selectedNodes, orderFunction(dates, calendarFormats[format]))
+    const data = orderFunction(dates).map((date: Date) =>
+      formatDate(date, calendarFormats[format])
+    )
+    supplyData(selectedNodes, data)
 
     figma.clientStorage.setAsync('datetime.order', options.order)
     figma.clientStorage.setAsync('datetime.start', options.start)
